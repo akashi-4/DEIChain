@@ -1,3 +1,7 @@
+/* 
+    João Victor Furukawa - 2021238987
+    Gladys Maquena - 2022242385
+*/
 #ifndef LOGGER_H
 #define LOGGER_H
 

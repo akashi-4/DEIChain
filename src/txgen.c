@@ -1,3 +1,8 @@
+/* 
+    João Victor Furukawa - 2021238987
+    Gladys Maquena - 2022242385
+*/
+
 #include "common.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -12,6 +17,7 @@
 #include <sys/stat.h>
 #include <sys/errno.h>
 #include "logger.h"
+#include "txgen.h"
 
 
 #define DEBUG 1

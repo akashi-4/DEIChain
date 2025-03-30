@@ -1,3 +1,8 @@
+/* 
+    João Victor Furukawa - 2021238987
+    Gladys Maquena - 2022242385
+*/
+
 #ifndef COMMON_H
 #define COMMON_H
 

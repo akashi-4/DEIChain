@@ -1,3 +1,8 @@
+/* 
+    João Victor Furukawa - 2021238987
+    Gladys Maquena - 2022242385
+*/
+
 #include "logger.h"
 #include <stdio.h>
 #include <stdlib.h>

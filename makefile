@@ -37,6 +37,11 @@ $(TXGEN_EXECUTABLE): $(TXGEN_OBJECTS)
 $(BIN_DIR)/%.o: $(SRC_DIR)/%.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
+# Dependencies
+$(BIN_DIR)/controller.o: $(SRC_DIR)/controller.c $(SRC_DIR)/controller.h $(SRC_DIR)/common.h $(SRC_DIR)/logger.h
+$(BIN_DIR)/txgen.o: $(SRC_DIR)/txgen.c $(SRC_DIR)/txgen.h $(SRC_DIR)/common.h $(SRC_DIR)/logger.h
+$(BIN_DIR)/logger.o: $(SRC_DIR)/logger.c $(SRC_DIR)/logger.h
+
 # Clean everything
 clean:
 	rm -rf $(BIN_DIR) $(CONTROLLER_EXECUTABLE) $(TXGEN_EXECUTABLE) *.a *.so *.o *~ core

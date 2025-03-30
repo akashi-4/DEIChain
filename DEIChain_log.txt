@@ -595,3 +595,52 @@ Received SIGINT, shutting down...
 [2025-03-30 17:33:22] Received SIGINT from txgen, shutting down txgen...
 --- Logging session ended at 2025-03-30 17:33:22 ---
 
+
+--- New logging session started at 2025-03-30 23:23:03 ---
+[2025-03-30 23:23:03] DEIChain Controller starting up
+[2025-03-30 23:23:03] Configuration read successfully
+[2025-03-30 23:23:03] NUM_MINERS = 5
+[2025-03-30 23:23:03] TX_POOL_SIZE = 50
+[2025-03-30 23:23:03] TRANSACTIONS_PER_BLOCK = 10
+[2025-03-30 23:23:03] BLOCKCHAIN_BLOCKS = 50000
+[2025-03-30 23:23:03] Transaction pool shared memory ID: 0
+[2025-03-30 23:23:03] Blockchain ledger shared memory ID: 1
+[2025-03-30 23:23:03] Transaction pool attached at address: 0x7f911f47a000
+[2025-03-30 23:23:03] Blockchain ledger attached at address: 0x7f911f440000
+[2025-03-30 23:23:03] Signal handlers installed. Send SIGUSR1 to print statistics (kill -SIGUSR1 348)
+[2025-03-30 23:23:03] All miner threads created
+[2025-03-30 23:23:03] Miner thread 5 started
+[2025-03-30 23:23:03] Miner thread 4 started
+[2025-03-30 23:23:03] Miner thread 3 started
+[2025-03-30 23:23:03] Miner thread 2 started
+[2025-03-30 23:23:03] Miner thread 1 started
+
+--- New logging session started at 2025-03-30 23:23:15 ---
+[2025-03-30 23:23:15] TxGen starting up
+[2025-03-30 23:23:15] Transaction generated: 68 Reward: 2 BTC Sleep time: 200ms Value: 310.67
+[2025-03-30 23:23:20] Transaction generated: 74 Reward: 2 BTC Sleep time: 200ms Value: 26.33
+[2025-03-30 23:23:25] Transaction generated: 16 Reward: 2 BTC Sleep time: 200ms Value: 276.00
+[2025-03-30 23:23:30] Transaction generated: 16 Reward: 2 BTC Sleep time: 200ms Value: 209.00
+[2025-03-30 23:23:35] Transaction generated: 13 Reward: 2 BTC Sleep time: 200ms Value: 90.33
+[2025-03-30 23:23:41] Transaction generated: 18 Reward: 2 BTC Sleep time: 200ms Value: 191.00
+[2025-03-30 23:23:46] Transaction generated: 31 Reward: 2 BTC Sleep time: 200ms Value: 13.00
+[2025-03-30 23:23:48] 
+Received SIGINT, shutting down...
+[2025-03-30 23:23:48] Waiting for all miner threads to finish...
+[2025-03-30 23:23:48] Miner thread 5 shutting down
+[2025-03-30 23:23:48] Miner thread 4 shutting down
+[2025-03-30 23:23:48] Miner thread 3 shutting down
+[2025-03-30 23:23:48] Miner thread 2 shutting down
+[2025-03-30 23:23:48] Miner thread 1 shutting down
+[2025-03-30 23:23:48] All miner threads terminated
+[2025-03-30 23:23:48] Detached from transaction pool shared memory
+[2025-03-30 23:23:48] Detached from blockchain ledger shared memory
+[2025-03-30 23:23:48] Removed transaction pool shared memory
+[2025-03-30 23:23:48] Removed blockchain ledger shared memory
+[2025-03-30 23:23:48] All resources cleaned up, exiting
+--- Logging session ended at 2025-03-30 23:23:48 ---
+
+[2025-03-30 23:23:51] Transaction generated: 88 Reward: 2 BTC Sleep time: 200ms Value: 32.33
+[2025-03-30 23:23:52] Received SIGINT from txgen, shutting down txgen...
+--- Logging session ended at 2025-03-30 23:23:52 ---
+

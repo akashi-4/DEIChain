@@ -1,3 +1,7 @@
+/* 
+    João Victor Furukawa - 2021238987
+    Gladys Maquena - 2022242385
+*/
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -15,6 +19,7 @@
 
 #include "common.h"
 #include "logger.h"  // Include the logger header
+#include "controller.h"
 
 #define CONFIG_FILE "config.cfg"
 #define DEBUG 1        // Set to 1 to enable debug messages
@@ -105,7 +110,7 @@ void setup_shared_memory(Config config) {
     size_t pool_size = sizeof(TransactionPool) + config.tx_pool_size * sizeof(TransactionEntry);
     size_t ledger_size = sizeof(BlockchainLedger);
 
-    // Create the shared memory segments
+    // Create the shared memory segments, maybe we will need to change to key-based shared memory using ftok()
     tx_pool_shmid = shmget(IPC_PRIVATE, pool_size, IPC_CREAT | 0664);
     blockchain_shmid = shmget(IPC_PRIVATE, ledger_size, IPC_CREAT | 0664);
 
