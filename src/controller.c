@@ -22,9 +22,8 @@
 #include "controller.h"
 
 #define CONFIG_FILE "config.cfg"
-#define DEBUG 1        // Set to 1 to enable debug messages
-#define CONSOLE_DEBUG 1 // Set to 1 to print debug messages to console
-#define LOG_DEBUG 1    // Set to 1 to write debug messages to log file
+#define DEBUG 0        // Set to 1 to enable debug messages
+
 
 // Booting the system, reading the configuration file, validating the data in the
 // file, and applying the read configurations
@@ -236,7 +235,7 @@ void signal_handler(int signum) {
 }
 
 // Create miner threads but don't wait for them
-void create_miner_threads(int num_miners) {
+void miner_process(int num_miners) {
     // Store the number of miners globally
     num_miners_global = num_miners;
     
@@ -247,8 +246,9 @@ void create_miner_threads(int num_miners) {
     // Create the threads
     for (int i = 0; i < num_miners; i++) {
         thread_ids[i] = i + 1;  // Store thread ID
-        
+        #if DEBUG
         debug_message("Creating miner thread %d\n", i + 1);
+        #endif
         
         // Create the Miner threads
         pthread_create(&miner_threads[i], NULL, miner_thread, &thread_ids[i]);
@@ -266,7 +266,9 @@ int wait_for_miner_threads() {
     
     // Wait for all Miner threads to complete
     for (int i = 0; i < num_miners_global; i++) {
+        #if DEBUG
         debug_message("Joining miner thread %d\n", i + 1);
+        #endif
         pthread_join(miner_threads[i], NULL);
     }
     
@@ -283,7 +285,9 @@ void create_validator_process(){
     // Create the Validator process
     pid_t validator_id = fork();
     if(validator_id == 0){
+        #if DEBUG
         debug_message("Creating validator process\n");
+        #endif
         // Child process
         //validator_process();
         exit(0);  // Exit after validator process completes
@@ -292,7 +296,9 @@ void create_validator_process(){
         perror("Failed to create validator process");
     } else {
         // Parent process
+        #if DEBUG
         debug_message("Created validator process with PID %d\n", validator_id);
+        #endif
     }
 }
 
@@ -300,7 +306,9 @@ void create_statistics_process(){
     // Create the Statistics process
     pid_t statistics_id = fork();
     if(statistics_id == 0){
+        #if DEBUG
         debug_message("Creating statistics process\n");
+        #endif
         // Child process
         //statistics_process();
         exit(0);  // Exit after statistics process completes
@@ -309,7 +317,36 @@ void create_statistics_process(){
         perror("Failed to create statistics process");
     } else {
         // Parent process
+        #if DEBUG
         debug_message("Created statistics process with PID %d\n", statistics_id);
+        #endif
+    }
+}
+
+void create_miner_process(int num_miners){
+    // Create the Miner process
+    pid_t miner_id = fork();
+    if(miner_id == 0){
+        #if DEBUG
+        debug_message("Creating miner process\n");
+        #endif
+        // Child process
+        miner_process(num_miners);
+        while(running_miner_threads){
+            sleep(1);
+        }
+        if(wait_for_miner_threads() == 1){
+            log_message("Miner process completed\n");
+        }
+        exit(0);
+    } else if (miner_id < 0) {
+        // Error handling
+        perror("Failed to create miner process");
+    } else {
+        // Parent process
+        #if DEBUG
+        debug_message("Created miner process with PID %d\n", miner_id);
+        #endif
     }
 }
 
@@ -330,7 +367,7 @@ int main(int argc, char *argv[]) {
     log_message("Signal handlers installed. Send SIGUSR1 to print statistics (kill -SIGUSR1 %d)\n", getpid());
     
     // Create threads and processes
-    create_miner_threads(config.num_miners);
+    create_miner_process(config.num_miners);
     create_validator_process();
     create_statistics_process();
     
@@ -345,12 +382,24 @@ int main(int argc, char *argv[]) {
         sleep(1);
     }
     
-    // Clean up
-    if (wait_for_miner_threads() == 1) {
-        #ifdef DEBUG
-        log_message("All miner threads terminated\n");
-        #endif
+    log_message("Beginning shutdown sequence...\n");
+    
+    // Wait for all child processes to terminate
+    log_message("Waiting for child processes to terminate...\n");
+    pid_t child_pid;
+    int status;
+    
+    while ((child_pid = waitpid(-1, &status, 0)) > 0) {
+        if (WIFEXITED(status)) {
+            log_message("Child process %d terminated with exit status %d\n", 
+                       child_pid, WEXITSTATUS(status));
+        } else if (WIFSIGNALED(status)) {
+            log_message("Child process %d terminated by signal %d\n", 
+                       child_pid, WTERMSIG(status));
+        }
     }
+    
+    // Clean up shared memory
     cleanup_shared_memory();
 
     log_message("All resources cleaned up, exiting\n");

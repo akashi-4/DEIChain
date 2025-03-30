@@ -13,7 +13,8 @@ void setup_shared_memory(Config config);
 void cleanup_shared_memory();
 
 // Thread and process management
-void create_miner_threads(int num_miners);
+void create_miner_process(int num_miners);
+void miner_process(int num_miners);
 int wait_for_miner_threads();
 void create_validator_process();
 void create_statistics_process();

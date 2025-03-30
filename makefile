@@ -1,5 +1,5 @@
 CC = gcc
-CFLAGS = -Wall -pthread
+CFLAGS = -Wall -pthread -DDEBUG=0
 LDFLAGS = -pthread
 
 # Directories

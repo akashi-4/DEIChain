@@ -21,8 +21,7 @@
 
 
 #define DEBUG 1
-#define LOG_DEBUG 1
-#define CONSOLE_DEBUG 1
+
 // ./txgen <reward> <sleep_time>
 // Sleep time is in milliseconds
 int running = 1;

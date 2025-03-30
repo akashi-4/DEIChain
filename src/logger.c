@@ -11,9 +11,6 @@
 #include <string.h>
 #include <pthread.h>
 
-// External debug control flags
-extern int CONSOLE_DEBUG;
-extern int LOG_DEBUG;
 
 // File pointer for the log file
 static FILE* log_file = NULL;
@@ -115,25 +112,11 @@ void debug_message(const char* format, ...) {
     va_list args;
     va_start(args, format);
     
-    // Print to console if console debug is enabled
-    #if CONSOLE_DEBUG
+    // Print to console
     printf("[DEBUG %s] ", time_str);
     vprintf(format, args);
-    #endif
     
-    // Reset va_list for file output
-    va_end(args);
-    va_start(args, format);
-    
-    // Write to log file if log debug is enabled and file is open
-    #if LOG_DEBUG
-    if (log_file != NULL) {
-        fprintf(log_file, "[DEBUG %s] ", time_str);
-        vfprintf(log_file, format, args);
-        fflush(log_file);
-    }
-    #endif
-    
+    // End of Selection
     va_end(args);
     pthread_mutex_unlock(&log_mutex);
     #endif
