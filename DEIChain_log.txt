@@ -1,0 +1,597 @@
+
+--- New logging session started at 2025-03-30 16:34:39 ---
+[2025-03-30 16:34:39] DEIChain Controller starting up
+
+--- New logging session started at 2025-03-30 16:34:54 ---
+[2025-03-30 16:34:54] DEIChain Controller starting up
+
+--- New logging session started at 2025-03-30 16:35:19 ---
+[2025-03-30 16:35:19] DEIChain Controller starting up
+
+--- New logging session started at 2025-03-30 16:37:08 ---
+[2025-03-30 16:37:08] DEIChain Controller starting up
+[2025-03-30 16:37:08] Configuration read successfully
+[2025-03-30 16:37:08] NUM_MINERS = 5
+[2025-03-30 16:37:08] TX_POOL_SIZE = 50
+[2025-03-30 16:37:08] BLOCKCHAIN_BLOCKS = 50000
+[2025-03-30 16:37:08] TRANSACTIONS_PER_BLOCK = 10
+[2025-03-30 16:37:08] Transaction pool shared memory ID: 20
+[2025-03-30 16:37:08] Blockchain ledger shared memory ID: 21
+[2025-03-30 16:37:08] Transaction pool attached at address: 0x7f0bb4f02000
+[2025-03-30 16:37:08] Blockchain ledger attached at address: 0x7f0bb4ec8000
+[2025-03-30 16:37:08] Creating miner thread 1
+[2025-03-30 16:37:08] Creating miner thread 2
+[2025-03-30 16:37:08] Creating miner thread 3
+[2025-03-30 16:37:08] Creating miner thread 4
+[2025-03-30 16:37:08] Creating miner thread 5
+[2025-03-30 16:37:08] All miner threads created
+[2025-03-30 16:37:08] Created validator process with PID 2064
+[2025-03-30 16:37:08] Created statistics process with PID 2065
+[2025-03-30 16:37:08] Creating validator process
+[2025-03-30 16:37:08] Creating statistics process
+[2025-03-30 16:37:08] Miner thread 4 started
+[2025-03-30 16:37:08] Miner thread 1 started
+[2025-03-30 16:37:08] Miner thread 5 started
+[2025-03-30 16:37:08] Miner thread 3 started
+[2025-03-30 16:37:08] Miner thread 2 started
+[2025-03-30 16:37:45] 
+Received SIGINT, shutting down...
+[2025-03-30 16:37:46] Waiting for all miner threads to finish...
+[2025-03-30 16:37:46] Joining miner thread 1
+[2025-03-30 16:37:46] 
+Received SIGINT, shutting down...
+[2025-03-30 16:37:46] Miner thread 1 shutting down
+[2025-03-30 16:37:46] Joining miner thread 2
+[2025-03-30 16:37:47] Miner thread 4 shutting down
+[2025-03-30 16:37:47] Miner thread 5 shutting down
+[2025-03-30 16:37:47] Miner thread 3 shutting down
+[2025-03-30 16:37:47] Miner thread 2 shutting down
+[2025-03-30 16:37:47] Joining miner thread 3
+[2025-03-30 16:37:47] Joining miner thread 4
+[2025-03-30 16:37:47] Joining miner thread 5
+[2025-03-30 16:37:47] All miner threads terminated
+[2025-03-30 16:37:47] Detached from transaction pool shared memory
+[2025-03-30 16:37:47] Detached from blockchain ledger shared memory
+[2025-03-30 16:37:47] Removed transaction pool shared memory
+[2025-03-30 16:37:47] Removed blockchain ledger shared memory
+[2025-03-30 16:37:47] All resources cleaned up, exiting
+--- Logging session ended at 2025-03-30 16:37:47 ---
+
+
+--- New logging session started at 2025-03-30 16:44:37 ---
+[2025-03-30 16:44:37] DEIChain Controller starting up
+[2025-03-30 16:44:37] Configuration read successfully
+[2025-03-30 16:44:37] NUM_MINERS = 5
+[2025-03-30 16:44:37] TX_POOL_SIZE = 50
+[2025-03-30 16:44:37] BLOCKCHAIN_BLOCKS = 50000
+[2025-03-30 16:44:37] TRANSACTIONS_PER_BLOCK = 10
+[2025-03-30 16:44:37] Transaction pool shared memory ID: 0
+[2025-03-30 16:44:37] Blockchain ledger shared memory ID: 1
+[2025-03-30 16:44:37] Transaction pool attached at address: 0x7f2564caf000
+[2025-03-30 16:44:37] Blockchain ledger attached at address: 0x7f2564c75000
+[2025-03-30 16:44:37] Creating miner thread 1
+[2025-03-30 16:44:37] Creating miner thread 2
+[2025-03-30 16:44:37] Creating miner thread 3
+[2025-03-30 16:44:37] Creating miner thread 4
+[2025-03-30 16:44:37] Creating miner thread 5
+[2025-03-30 16:44:37] All miner threads created
+[2025-03-30 16:44:37] Created validator process with PID 402
+[2025-03-30 16:44:37] Created statistics process with PID 403
+[2025-03-30 16:44:37] Creating validator process
+[2025-03-30 16:44:37] Creating statistics process
+[2025-03-30 16:44:37] Miner thread 4 started
+[2025-03-30 16:44:37] Miner thread 1 started
+[2025-03-30 16:44:37] Miner thread 5 started
+[2025-03-30 16:44:37] Miner thread 3 started
+[2025-03-30 16:44:37] Miner thread 2 started
+
+--- New logging session started at 2025-03-30 16:48:12 ---
+[2025-03-30 16:48:12] TxGen starting up
+[2025-03-30 16:48:12] Transaction generated: 1616267597
+ Reward: 2
+ Sleep time: 200
+ [2025-03-30 16:48:15] 
+Received SIGINT, shutting down...
+[2025-03-30 16:48:15] Waiting for all miner threads to finish...
+[2025-03-30 16:48:15] Joining miner thread 1
+[2025-03-30 16:48:16] Miner thread 3 shutting down
+[2025-03-30 16:48:16] Miner thread 4 shutting down
+[2025-03-30 16:48:16] Miner thread 1 shutting down
+[2025-03-30 16:48:16] Miner thread 2 shutting down
+[2025-03-30 16:48:16] Miner thread 5 shutting down
+[2025-03-30 16:48:16] Joining miner thread 2
+[2025-03-30 16:48:16] Joining miner thread 3
+[2025-03-30 16:48:16] Joining miner thread 4
+[2025-03-30 16:48:16] Joining miner thread 5
+[2025-03-30 16:48:16] All miner threads terminated
+[2025-03-30 16:48:16] Detached from transaction pool shared memory
+[2025-03-30 16:48:16] Detached from blockchain ledger shared memory
+[2025-03-30 16:48:16] Removed transaction pool shared memory
+[2025-03-30 16:48:16] Removed blockchain ledger shared memory
+[2025-03-30 16:48:16] All resources cleaned up, exiting
+--- Logging session ended at 2025-03-30 16:48:16 ---
+
+
+--- New logging session started at 2025-03-30 16:48:19 ---
+[2025-03-30 16:48:19] DEIChain Controller starting up
+[2025-03-30 16:48:19] Configuration read successfully
+[2025-03-30 16:48:19] NUM_MINERS = 5
+[2025-03-30 16:48:19] TX_POOL_SIZE = 50
+[2025-03-30 16:48:19] BLOCKCHAIN_BLOCKS = 50000
+[2025-03-30 16:48:19] TRANSACTIONS_PER_BLOCK = 10
+[2025-03-30 16:48:19] Transaction pool shared memory ID: 2
+[2025-03-30 16:48:19] Blockchain ledger shared memory ID: 3
+[2025-03-30 16:48:19] Transaction pool attached at address: 0x7f84c4dc1000
+[2025-03-30 16:48:19] Blockchain ledger attached at address: 0x7f84c4d87000
+[2025-03-30 16:48:19] Creating miner thread 1
+[2025-03-30 16:48:19] Creating miner thread 2
+[2025-03-30 16:48:19] Creating miner thread 3
+[2025-03-30 16:48:19] Creating miner thread 4
+[2025-03-30 16:48:19] Creating miner thread 5
+[2025-03-30 16:48:19] All miner threads created
+[2025-03-30 16:48:19] Created validator process with PID 581
+[2025-03-30 16:48:19] Created statistics process with PID 582
+[2025-03-30 16:48:19] Creating validator process
+[2025-03-30 16:48:19] Creating statistics process
+[2025-03-30 16:48:19] Miner thread 4 started
+[2025-03-30 16:48:19] Miner thread 1 started
+[2025-03-30 16:48:19] Miner thread 5 started
+[2025-03-30 16:48:19] Miner thread 3 started
+[2025-03-30 16:48:19] Miner thread 2 started
+[2025-03-30 16:49:59] 
+Received SIGINT, shutting down...
+[2025-03-30 16:49:59] Waiting for all miner threads to finish...
+[2025-03-30 16:49:59] Joining miner thread 1
+[2025-03-30 16:49:59] Miner thread 2 shutting down
+[2025-03-30 16:49:59] Miner thread 5 shutting down
+[2025-03-30 16:49:59] Miner thread 1 shutting down
+[2025-03-30 16:49:59] Miner thread 4 shutting down
+[2025-03-30 16:49:59] Miner thread 3 shutting down
+[2025-03-30 16:49:59] Joining miner thread 2
+[2025-03-30 16:49:59] Joining miner thread 3
+[2025-03-30 16:49:59] Joining miner thread 4
+[2025-03-30 16:49:59] Joining miner thread 5
+[2025-03-30 16:49:59] All miner threads terminated
+[2025-03-30 16:49:59] Detached from transaction pool shared memory
+[2025-03-30 16:49:59] Detached from blockchain ledger shared memory
+[2025-03-30 16:49:59] Removed transaction pool shared memory
+[2025-03-30 16:49:59] Removed blockchain ledger shared memory
+[2025-03-30 16:49:59] All resources cleaned up, exiting
+--- Logging session ended at 2025-03-30 16:49:59 ---
+
+
+--- New logging session started at 2025-03-30 16:52:05 ---
+[2025-03-30 16:52:05] DEIChain Controller starting up
+[2025-03-30 16:52:05] Configuration read successfully
+[2025-03-30 16:52:05] NUM_MINERS = 5
+[2025-03-30 16:52:05] TX_POOL_SIZE = 50
+[2025-03-30 16:52:05] BLOCKCHAIN_BLOCKS = 50000
+[2025-03-30 16:52:05] TRANSACTIONS_PER_BLOCK = 10
+[2025-03-30 16:52:05] Transaction pool shared memory ID: 4
+[2025-03-30 16:52:05] Blockchain ledger shared memory ID: 5
+[2025-03-30 16:52:05] Transaction pool attached at address: 0x7f5d8c516000
+[2025-03-30 16:52:05] Blockchain ledger attached at address: 0x7f5d8c4dc000
+[2025-03-30 16:52:05] Creating miner thread 1
+[2025-03-30 16:52:05] Creating miner thread 2
+[2025-03-30 16:52:05] Creating miner thread 3
+[2025-03-30 16:52:05] Creating miner thread 4
+[2025-03-30 16:52:05] Creating miner thread 5
+[2025-03-30 16:52:05] All miner threads created
+[2025-03-30 16:52:05] Created validator process with PID 628
+[2025-03-30 16:52:05] Created statistics process with PID 629
+[2025-03-30 16:52:05] Creating validator process
+[2025-03-30 16:52:05] Creating statistics process
+[2025-03-30 16:52:05] Miner thread 4 started
+[2025-03-30 16:52:05] Miner thread 1 started
+[2025-03-30 16:52:05] Miner thread 5 started
+[2025-03-30 16:52:05] Miner thread 3 started
+[2025-03-30 16:52:05] Miner thread 2 started
+[2025-03-30 16:52:09] 
+Received SIGINT, shutting down...
+[2025-03-30 16:52:09] Waiting for all miner threads to finish...
+[2025-03-30 16:52:09] Joining miner thread 1
+[2025-03-30 16:52:09] Miner thread 4 shutting down
+[2025-03-30 16:52:09] Miner thread 1 shutting down
+[2025-03-30 16:52:09] Miner thread 5 shutting down
+[2025-03-30 16:52:09] Miner thread 3 shutting down
+[2025-03-30 16:52:09] Miner thread 2 shutting down
+[2025-03-30 16:52:09] Joining miner thread 2
+[2025-03-30 16:52:09] Joining miner thread 3
+[2025-03-30 16:52:09] Joining miner thread 4
+[2025-03-30 16:52:09] Joining miner thread 5
+[2025-03-30 16:52:09] All miner threads terminated
+[2025-03-30 16:52:09] Detached from transaction pool shared memory
+[2025-03-30 16:52:09] Detached from blockchain ledger shared memory
+[2025-03-30 16:52:09] Removed transaction pool shared memory
+[2025-03-30 16:52:09] Removed blockchain ledger shared memory
+[2025-03-30 16:52:09] All resources cleaned up, exiting
+--- Logging session ended at 2025-03-30 16:52:09 ---
+
+
+--- New logging session started at 2025-03-30 17:06:19 ---
+[2025-03-30 17:06:19] DEIChain Controller starting up
+[2025-03-30 17:06:19] Configuration read successfully
+[2025-03-30 17:06:19] NUM_MINERS = 5
+[2025-03-30 17:06:19] TX_POOL_SIZE = 50
+[2025-03-30 17:06:19] TRANSACTIONS_PER_BLOCK = 10
+[2025-03-30 17:06:19] BLOCKCHAIN_BLOCKS = 50000
+[2025-03-30 17:06:19] Transaction pool shared memory ID: 6
+[2025-03-30 17:06:19] Blockchain ledger shared memory ID: 7
+[2025-03-30 17:06:19] Transaction pool attached at address: 0x7f60d307e000
+[2025-03-30 17:06:19] Blockchain ledger attached at address: 0x7f60d3044000
+[2025-03-30 17:06:19] Signal handlers installed. Send SIGUSR1 to print statistics (kill -SIGUSR1 670)
+[2025-03-30 17:06:19] All miner threads created
+[2025-03-30 17:06:19] Miner thread 5 started
+[2025-03-30 17:06:19] Miner thread 4 started
+[2025-03-30 17:06:19] Miner thread 3 started
+[2025-03-30 17:06:19] Miner thread 2 started
+[2025-03-30 17:06:19] Miner thread 1 started
+
+--- New logging session started at 2025-03-30 17:07:55 ---
+[2025-03-30 17:07:55] TxGen starting up
+[2025-03-30 17:07:55] Transaction generated: 1535435451 Reward: 2 Sleep time: 200 Value: 478.000000
+[2025-03-30 17:10:38] Received SIGINT from txgen, shutting down txgen
+--- Logging session ended at 2025-03-30 17:10:43 ---
+
+
+--- New logging session started at 2025-03-30 17:11:32 ---
+[2025-03-30 17:11:32] TxGen starting up
+[2025-03-30 17:11:32] Transaction generated: 10 Reward: 2 BTC Sleep time: 200 ms Value: 0.37
+[2025-03-30 17:11:32] Transaction generated: 25 Reward: 2 BTC Sleep time: 200 ms Value: 0.57
+[2025-03-30 17:11:32] Transaction generated: 69 Reward: 2 BTC Sleep time: 200 ms Value: 0.54
+[2025-03-30 17:11:33] Transaction generated: 94 Reward: 2 BTC Sleep time: 200 ms Value: 0.63
+[2025-03-30 17:11:33] Transaction generated: 63 Reward: 2 BTC Sleep time: 200 ms Value: 0.67
+[2025-03-30 17:11:33] Transaction generated: 45 Reward: 2 BTC Sleep time: 200 ms Value: 0.99
+[2025-03-30 17:11:33] Transaction generated: 61 Reward: 2 BTC Sleep time: 200 ms Value: 0.09
+[2025-03-30 17:11:33] Transaction generated: 84 Reward: 2 BTC Sleep time: 200 ms Value: 0.33
+[2025-03-30 17:11:34] Transaction generated: 59 Reward: 2 BTC Sleep time: 200 ms Value: 0.61
+[2025-03-30 17:11:34] Transaction generated: 62 Reward: 2 BTC Sleep time: 200 ms Value: 0.84
+[2025-03-30 17:11:34] Transaction generated: 71 Reward: 2 BTC Sleep time: 200 ms Value: 0.09
+[2025-03-30 17:11:34] Transaction generated: 56 Reward: 2 BTC Sleep time: 200 ms Value: 0.00
+[2025-03-30 17:11:34] Transaction generated: 91 Reward: 2 BTC Sleep time: 200 ms Value: 0.56
+[2025-03-30 17:11:35] Transaction generated: 40 Reward: 2 BTC Sleep time: 200 ms Value: 0.33
+[2025-03-30 17:11:35] Transaction generated: 69 Reward: 2 BTC Sleep time: 200 ms Value: 0.66
+[2025-03-30 17:11:35] Transaction generated: 47 Reward: 2 BTC Sleep time: 200 ms Value: 0.38
+[2025-03-30 17:11:35] Transaction generated: 27 Reward: 2 BTC Sleep time: 200 ms Value: 0.23
+[2025-03-30 17:11:35] Transaction generated: 54 Reward: 2 BTC Sleep time: 200 ms Value: 0.15
+[2025-03-30 17:11:36] Transaction generated: 68 Reward: 2 BTC Sleep time: 200 ms Value: 0.40
+[2025-03-30 17:11:36] Transaction generated: 79 Reward: 2 BTC Sleep time: 200 ms Value: 0.78
+[2025-03-30 17:11:36] Transaction generated: 72 Reward: 2 BTC Sleep time: 200 ms Value: 0.78
+[2025-03-30 17:11:36] Transaction generated: 73 Reward: 2 BTC Sleep time: 200 ms Value: 0.69
+[2025-03-30 17:11:36] Transaction generated: 68 Reward: 2 BTC Sleep time: 200 ms Value: 0.51
+[2025-03-30 17:11:37] Transaction generated: 19 Reward: 2 BTC Sleep time: 200 ms Value: 0.03
+[2025-03-30 17:11:37] Transaction generated: 19 Reward: 2 BTC Sleep time: 200 ms Value: 0.33
+[2025-03-30 17:11:37] Transaction generated: 65 Reward: 2 BTC Sleep time: 200 ms Value: 0.34
+[2025-03-30 17:11:37] Transaction generated: 27 Reward: 2 BTC Sleep time: 200 ms Value: 0.37
+[2025-03-30 17:11:37] Transaction generated: 46 Reward: 2 BTC Sleep time: 200 ms Value: 0.37
+[2025-03-30 17:11:38] Transaction generated: 29 Reward: 2 BTC Sleep time: 200 ms Value: 0.04
+[2025-03-30 17:11:38] Transaction generated: 2 Reward: 2 BTC Sleep time: 200 ms Value: 0.80
+[2025-03-30 17:11:38] Transaction generated: 98 Reward: 2 BTC Sleep time: 200 ms Value: 0.50
+[2025-03-30 17:11:38] Transaction generated: 78 Reward: 2 BTC Sleep time: 200 ms Value: 0.08
+[2025-03-30 17:11:38] Transaction generated: 27 Reward: 2 BTC Sleep time: 200 ms Value: 0.48
+[2025-03-30 17:11:39] Transaction generated: 26 Reward: 2 BTC Sleep time: 200 ms Value: 0.49
+[2025-03-30 17:11:39] Transaction generated: 84 Reward: 2 BTC Sleep time: 200 ms Value: 0.36
+[2025-03-30 17:11:39] Transaction generated: 31 Reward: 2 BTC Sleep time: 200 ms Value: 0.31
+[2025-03-30 17:11:39] Transaction generated: 34 Reward: 2 BTC Sleep time: 200 ms Value: 0.40
+[2025-03-30 17:11:39] Transaction generated: 95 Reward: 2 BTC Sleep time: 200 ms Value: 0.00
+[2025-03-30 17:11:40] Transaction generated: 13 Reward: 2 BTC Sleep time: 200 ms Value: 0.37
+[2025-03-30 17:11:40] Transaction generated: 81 Reward: 2 BTC Sleep time: 200 ms Value: 0.38
+[2025-03-30 17:11:40] Transaction generated: 99 Reward: 2 BTC Sleep time: 200 ms Value: 0.60
+[2025-03-30 17:11:40] Transaction generated: 26 Reward: 2 BTC Sleep time: 200 ms Value: 0.48
+[2025-03-30 17:11:40] Transaction generated: 73 Reward: 2 BTC Sleep time: 200 ms Value: 0.42
+[2025-03-30 17:11:41] Transaction generated: 50 Reward: 2 BTC Sleep time: 200 ms Value: 0.90
+[2025-03-30 17:11:41] Transaction generated: 63 Reward: 2 BTC Sleep time: 200 ms Value: 0.90
+[2025-03-30 17:11:41] Transaction generated: 1 Reward: 2 BTC Sleep time: 200 ms Value: 0.16
+[2025-03-30 17:11:41] Transaction generated: 6 Reward: 2 BTC Sleep time: 200 ms Value: 0.23
+[2025-03-30 17:11:41] Transaction generated: 91 Reward: 2 BTC Sleep time: 200 ms Value: 0.13
+[2025-03-30 17:11:42] Transaction generated: 68 Reward: 2 BTC Sleep time: 200 ms Value: 0.82
+[2025-03-30 17:11:42] Transaction generated: 81 Reward: 2 BTC Sleep time: 200 ms Value: 0.95
+[2025-03-30 17:11:42] Transaction generated: 75 Reward: 2 BTC Sleep time: 200 ms Value: 0.61
+[2025-03-30 17:11:42] Transaction generated: 14 Reward: 2 BTC Sleep time: 200 ms Value: 0.31
+[2025-03-30 17:11:42] Transaction generated: 68 Reward: 2 BTC Sleep time: 200 ms Value: 0.61
+[2025-03-30 17:11:43] Transaction generated: 64 Reward: 2 BTC Sleep time: 200 ms Value: 0.63
+[2025-03-30 17:11:43] Transaction generated: 27 Reward: 2 BTC Sleep time: 200 ms Value: 0.40
+[2025-03-30 17:11:47] Transaction generated: 17 Reward: 2 BTC Sleep time: 200 ms Value: 0.38
+[2025-03-30 17:11:47] Transaction generated: 97 Reward: 2 BTC Sleep time: 200 ms Value: 0.10
+[2025-03-30 17:11:47] Transaction generated: 57 Reward: 2 BTC Sleep time: 200 ms Value: 0.32
+[2025-03-30 17:11:47] Transaction generated: 72 Reward: 2 BTC Sleep time: 200 ms Value: 0.06
+[2025-03-30 17:11:47] Transaction generated: 24 Reward: 2 BTC Sleep time: 200 ms Value: 0.34
+[2025-03-30 17:11:48] Transaction generated: 64 Reward: 2 BTC Sleep time: 200 ms Value: 0.28
+[2025-03-30 17:11:48] Transaction generated: 49 Reward: 2 BTC Sleep time: 200 ms Value: 0.72
+[2025-03-30 17:11:48] Transaction generated: 10 Reward: 2 BTC Sleep time: 200 ms Value: 0.44
+[2025-03-30 17:11:48] Transaction generated: 8 Reward: 2 BTC Sleep time: 200 ms Value: 0.58
+[2025-03-30 17:11:48] Transaction generated: 10 Reward: 2 BTC Sleep time: 200 ms Value: 0.19
+[2025-03-30 17:11:49] Transaction generated: 83 Reward: 2 BTC Sleep time: 200 ms Value: 0.79
+[2025-03-30 17:11:49] Transaction generated: 53 Reward: 2 BTC Sleep time: 200 ms Value: 0.85
+[2025-03-30 17:11:49] Transaction generated: 47 Reward: 2 BTC Sleep time: 200 ms Value: 0.87
+[2025-03-30 17:11:49] Transaction generated: 10 Reward: 2 BTC Sleep time: 200 ms Value: 0.46
+[2025-03-30 17:11:49] Transaction generated: 58 Reward: 2 BTC Sleep time: 200 ms Value: 0.14
+[2025-03-30 17:11:50] Transaction generated: 14 Reward: 2 BTC Sleep time: 200 ms Value: 0.88
+[2025-03-30 17:11:50] Transaction generated: 16 Reward: 2 BTC Sleep time: 200 ms Value: 0.21
+[2025-03-30 17:11:50] Transaction generated: 22 Reward: 2 BTC Sleep time: 200 ms Value: 0.72
+[2025-03-30 17:11:50] Transaction generated: 33 Reward: 2 BTC Sleep time: 200 ms Value: 0.55
+[2025-03-30 17:11:50] Transaction generated: 85 Reward: 2 BTC Sleep time: 200 ms Value: 0.11
+[2025-03-30 17:11:51] Transaction generated: 83 Reward: 2 BTC Sleep time: 200 ms Value: 0.10
+[2025-03-30 17:11:51] Transaction generated: 39 Reward: 2 BTC Sleep time: 200 ms Value: 0.08
+[2025-03-30 17:11:51] Transaction generated: 23 Reward: 2 BTC Sleep time: 200 ms Value: 0.25
+[2025-03-30 17:11:51] Transaction generated: 77 Reward: 2 BTC Sleep time: 200 ms Value: 0.03
+[2025-03-30 17:11:51] Transaction generated: 80 Reward: 2 BTC Sleep time: 200 ms Value: 0.49
+[2025-03-30 17:11:52] Transaction generated: 72 Reward: 2 BTC Sleep time: 200 ms Value: 0.41
+[2025-03-30 17:11:52] Transaction generated: 24 Reward: 2 BTC Sleep time: 200 ms Value: 0.08
+[2025-03-30 17:11:52] Transaction generated: 65 Reward: 2 BTC Sleep time: 200 ms Value: 0.42
+[2025-03-30 17:11:52] Transaction generated: 50 Reward: 2 BTC Sleep time: 200 ms Value: 0.07
+[2025-03-30 17:11:52] Transaction generated: 40 Reward: 2 BTC Sleep time: 200 ms Value: 0.81
+[2025-03-30 17:11:53] Transaction generated: 13 Reward: 2 BTC Sleep time: 200 ms Value: 0.45
+[2025-03-30 17:11:53] Transaction generated: 35 Reward: 2 BTC Sleep time: 200 ms Value: 0.08
+[2025-03-30 17:11:53] Transaction generated: 17 Reward: 2 BTC Sleep time: 200 ms Value: 0.71
+[2025-03-30 17:11:53] Transaction generated: 6 Reward: 2 BTC Sleep time: 200 ms Value: 0.55
+[2025-03-30 17:11:53] Transaction generated: 57 Reward: 2 BTC Sleep time: 200 ms Value: 0.94
+[2025-03-30 17:11:54] Transaction generated: 11 Reward: 2 BTC Sleep time: 200 ms Value: 0.49
+[2025-03-30 17:11:54] Transaction generated: 96 Reward: 2 BTC Sleep time: 200 ms Value: 0.75
+[2025-03-30 17:11:54] Transaction generated: 76 Reward: 2 BTC Sleep time: 200 ms Value: 0.57
+[2025-03-30 17:11:54] Transaction generated: 52 Reward: 2 BTC Sleep time: 200 ms Value: 0.81
+[2025-03-30 17:11:55] Transaction generated: 55 Reward: 2 BTC Sleep time: 200 ms Value: 0.88
+[2025-03-30 17:11:55] Transaction generated: 92 Reward: 2 BTC Sleep time: 200 ms Value: 0.53
+[2025-03-30 17:11:55] Transaction generated: 0 Reward: 2 BTC Sleep time: 200 ms Value: 0.27
+[2025-03-30 17:11:55] Transaction generated: 57 Reward: 2 BTC Sleep time: 200 ms Value: 0.56
+[2025-03-30 17:11:55] Transaction generated: 45 Reward: 2 BTC Sleep time: 200 ms Value: 0.26
+[2025-03-30 17:11:56] Transaction generated: 92 Reward: 2 BTC Sleep time: 200 ms Value: 0.28
+[2025-03-30 17:11:56] Transaction generated: 20 Reward: 2 BTC Sleep time: 200 ms Value: 0.56
+[2025-03-30 17:11:56] Transaction generated: 39 Reward: 2 BTC Sleep time: 200 ms Value: 0.81
+[2025-03-30 17:11:56] Transaction generated: 38 Reward: 2 BTC Sleep time: 200 ms Value: 0.76
+[2025-03-30 17:11:56] Transaction generated: 18 Reward: 2 BTC Sleep time: 200 ms Value: 0.80
+[2025-03-30 17:11:57] Transaction generated: 58 Reward: 2 BTC Sleep time: 200 ms Value: 0.13
+[2025-03-30 17:11:57] Received SIGINT from txgen, shutting down txgen...
+--- Logging session ended at 2025-03-30 17:11:57 ---
+
+
+--- New logging session started at 2025-03-30 17:12:14 ---
+[2025-03-30 17:12:14] TxGen starting up
+[2025-03-30 17:12:14] Transaction generated: 37 Reward: 2 BTC Sleep time: 200 ms Value: 0.369000.2
+[2025-03-30 17:12:15] Transaction generated: 77 Reward: 2 BTC Sleep time: 200 ms Value: 0.808000.2
+[2025-03-30 17:12:15] Transaction generated: 49 Reward: 2 BTC Sleep time: 200 ms Value: 0.320000.2
+[2025-03-30 17:12:15] Transaction generated: 58 Reward: 2 BTC Sleep time: 200 ms Value: 0.260000.2
+[2025-03-30 17:12:15] Transaction generated: 22 Reward: 2 BTC Sleep time: 200 ms Value: 0.769000.2
+[2025-03-30 17:12:15] Transaction generated: 29 Reward: 2 BTC Sleep time: 200 ms Value: 0.181000.2
+[2025-03-30 17:12:16] Transaction generated: 8 Reward: 2 BTC Sleep time: 200 ms Value: 0.018000.2
+[2025-03-30 17:12:16] Transaction generated: 15 Reward: 2 BTC Sleep time: 200 ms Value: 0.512000.2
+[2025-03-30 17:12:16] Transaction generated: 39 Reward: 2 BTC Sleep time: 200 ms Value: 0.656000.2
+[2025-03-30 17:12:16] Transaction generated: 91 Reward: 2 BTC Sleep time: 200 ms Value: 0.026000.2
+[2025-03-30 17:12:16] Transaction generated: 26 Reward: 2 BTC Sleep time: 200 ms Value: 0.814000.2
+[2025-03-30 17:12:17] Transaction generated: 93 Reward: 2 BTC Sleep time: 200 ms Value: 0.826000.2
+[2025-03-30 17:12:17] Received SIGINT from txgen, shutting down txgen...
+--- Logging session ended at 2025-03-30 17:12:17 ---
+
+
+--- New logging session started at 2025-03-30 17:13:41 ---
+[2025-03-30 17:13:41] TxGen starting up
+[2025-03-30 17:13:41] Transaction generated: 31 Reward: 2 BTC Sleep time: 200ms Value: 10.33
+[2025-03-30 17:13:41] Transaction generated: 23 Reward: 2 BTC Sleep time: 200ms Value: 123.00
+[2025-03-30 17:13:41] Transaction generated: 39 Reward: 2 BTC Sleep time: 200ms Value: 184.33
+[2025-03-30 17:13:41] Transaction generated: 86 Reward: 2 BTC Sleep time: 200ms Value: 21.00
+[2025-03-30 17:13:42] Transaction generated: 13 Reward: 2 BTC Sleep time: 200ms Value: 254.67
+[2025-03-30 17:13:42] Transaction generated: 50 Reward: 2 BTC Sleep time: 200ms Value: 324.33
+[2025-03-30 17:13:42] Transaction generated: 41 Reward: 2 BTC Sleep time: 200ms Value: 331.00
+[2025-03-30 17:13:42] Transaction generated: 80 Reward: 2 BTC Sleep time: 200ms Value: 150.33
+[2025-03-30 17:13:42] Transaction generated: 40 Reward: 2 BTC Sleep time: 200ms Value: 316.67
+[2025-03-30 17:13:43] Transaction generated: 38 Reward: 2 BTC Sleep time: 200ms Value: 207.67
+[2025-03-30 17:13:43] Transaction generated: 98 Reward: 2 BTC Sleep time: 200ms Value: 179.67
+[2025-03-30 17:13:43] Transaction generated: 70 Reward: 2 BTC Sleep time: 200ms Value: 140.00
+[2025-03-30 17:13:43] Transaction generated: 85 Reward: 2 BTC Sleep time: 200ms Value: 154.67
+[2025-03-30 17:13:43] Transaction generated: 9 Reward: 2 BTC Sleep time: 200ms Value: 17.00
+[2025-03-30 17:13:44] Transaction generated: 6 Reward: 2 BTC Sleep time: 200ms Value: 239.67
+[2025-03-30 17:13:44] Transaction generated: 83 Reward: 2 BTC Sleep time: 200ms Value: 245.67
+[2025-03-30 17:13:44] Transaction generated: 2 Reward: 2 BTC Sleep time: 200ms Value: 35.33
+[2025-03-30 17:13:44] Transaction generated: 58 Reward: 2 BTC Sleep time: 200ms Value: 64.67
+[2025-03-30 17:13:44] Transaction generated: 59 Reward: 2 BTC Sleep time: 200ms Value: 14.67
+[2025-03-30 17:13:45] Transaction generated: 57 Reward: 2 BTC Sleep time: 200ms Value: 41.33
+[2025-03-30 17:13:45] Transaction generated: 60 Reward: 2 BTC Sleep time: 200ms Value: 286.67
+[2025-03-30 17:13:45] Transaction generated: 50 Reward: 2 BTC Sleep time: 200ms Value: 167.00
+[2025-03-30 17:13:45] Transaction generated: 53 Reward: 2 BTC Sleep time: 200ms Value: 210.00
+[2025-03-30 17:13:45] Transaction generated: 4 Reward: 2 BTC Sleep time: 200ms Value: 264.33
+[2025-03-30 17:13:46] Transaction generated: 32 Reward: 2 BTC Sleep time: 200ms Value: 247.67
+[2025-03-30 17:13:46] Transaction generated: 16 Reward: 2 BTC Sleep time: 200ms Value: 194.00
+[2025-03-30 17:13:46] Transaction generated: 34 Reward: 2 BTC Sleep time: 200ms Value: 246.00
+[2025-03-30 17:13:46] Transaction generated: 2 Reward: 2 BTC Sleep time: 200ms Value: 139.67
+[2025-03-30 17:13:46] Transaction generated: 54 Reward: 2 BTC Sleep time: 200ms Value: 37.00
+[2025-03-30 17:13:47] Transaction generated: 70 Reward: 2 BTC Sleep time: 200ms Value: 220.33
+[2025-03-30 17:13:47] Transaction generated: 82 Reward: 2 BTC Sleep time: 200ms Value: 284.33
+[2025-03-30 17:13:47] Transaction generated: 50 Reward: 2 BTC Sleep time: 200ms Value: 212.33
+[2025-03-30 17:13:47] Transaction generated: 11 Reward: 2 BTC Sleep time: 200ms Value: 69.67
+[2025-03-30 17:13:47] Transaction generated: 31 Reward: 2 BTC Sleep time: 200ms Value: 107.33
+[2025-03-30 17:13:48] Transaction generated: 5 Reward: 2 BTC Sleep time: 200ms Value: 146.67
+[2025-03-30 17:13:48] Transaction generated: 99 Reward: 2 BTC Sleep time: 200ms Value: 39.33
+[2025-03-30 17:13:48] Transaction generated: 0 Reward: 2 BTC Sleep time: 200ms Value: 83.00
+[2025-03-30 17:13:48] Transaction generated: 19 Reward: 2 BTC Sleep time: 200ms Value: 51.33
+[2025-03-30 17:13:48] Transaction generated: 31 Reward: 2 BTC Sleep time: 200ms Value: 308.00
+[2025-03-30 17:13:49] Transaction generated: 99 Reward: 2 BTC Sleep time: 200ms Value: 172.00
+[2025-03-30 17:13:49] Transaction generated: 19 Reward: 2 BTC Sleep time: 200ms Value: 238.67
+[2025-03-30 17:13:49] Transaction generated: 98 Reward: 2 BTC Sleep time: 200ms Value: 217.67
+[2025-03-30 17:13:49] Transaction generated: 6 Reward: 2 BTC Sleep time: 200ms Value: 33.67
+[2025-03-30 17:13:49] Transaction generated: 24 Reward: 2 BTC Sleep time: 200ms Value: 237.67
+[2025-03-30 17:13:50] Transaction generated: 64 Reward: 2 BTC Sleep time: 200ms Value: 82.33
+[2025-03-30 17:13:50] Transaction generated: 26 Reward: 2 BTC Sleep time: 200ms Value: 249.00
+[2025-03-30 17:13:50] Transaction generated: 0 Reward: 2 BTC Sleep time: 200ms Value: 158.67
+[2025-03-30 17:13:50] Transaction generated: 84 Reward: 2 BTC Sleep time: 200ms Value: 254.67
+[2025-03-30 17:13:50] Transaction generated: 37 Reward: 2 BTC Sleep time: 200ms Value: 189.00
+[2025-03-30 17:13:51] Transaction generated: 38 Reward: 2 BTC Sleep time: 200ms Value: 331.67
+[2025-03-30 17:13:51] Transaction generated: 7 Reward: 2 BTC Sleep time: 200ms Value: 79.00
+[2025-03-30 17:13:51] Transaction generated: 13 Reward: 2 BTC Sleep time: 200ms Value: 220.00
+[2025-03-30 17:13:51] Transaction generated: 38 Reward: 2 BTC Sleep time: 200ms Value: 244.00
+[2025-03-30 17:13:51] Transaction generated: 14 Reward: 2 BTC Sleep time: 200ms Value: 23.33
+[2025-03-30 17:13:52] Received SIGINT from txgen, shutting down txgen...
+--- Logging session ended at 2025-03-30 17:13:52 ---
+
+
+--- New logging session started at 2025-03-30 17:17:39 ---
+[2025-03-30 17:17:39] DEIChain Controller starting up
+[2025-03-30 17:17:39] Configuration read successfully
+[2025-03-30 17:17:39] NUM_MINERS = 5
+[2025-03-30 17:17:39] TX_POOL_SIZE = 50
+[2025-03-30 17:17:39] TRANSACTIONS_PER_BLOCK = 10
+[2025-03-30 17:17:39] BLOCKCHAIN_BLOCKS = 50000
+[2025-03-30 17:17:39] Transaction pool shared memory ID: 8
+[2025-03-30 17:17:39] Blockchain ledger shared memory ID: 9
+[2025-03-30 17:17:39] Transaction pool attached at address: 0x7fde6b467000
+[2025-03-30 17:17:39] Blockchain ledger attached at address: 0x7fde6b42d000
+[2025-03-30 17:17:39] Signal handlers installed. Send SIGUSR1 to print statistics (kill -SIGUSR1 862)
+[2025-03-30 17:17:39] All miner threads created
+[2025-03-30 17:17:39] Miner thread 5 started
+[2025-03-30 17:17:39] Miner thread 4 started
+[2025-03-30 17:17:39] Miner thread 3 started
+[2025-03-30 17:17:39] Miner thread 2 started
+[2025-03-30 17:17:39] Miner thread 1 started
+[2025-03-30 17:17:50] 
+Received SIGINT, shutting down...
+[2025-03-30 17:17:50] Waiting for all miner threads to finish...
+[2025-03-30 17:17:51] Miner thread 1 shutting down
+[2025-03-30 17:17:51] Miner thread 4 shutting down
+[2025-03-30 17:17:51] Miner thread 3 shutting down
+[2025-03-30 17:17:51] Miner thread 2 shutting down
+[2025-03-30 17:17:51] Miner thread 5 shutting down
+[2025-03-30 17:17:51] All miner threads terminated
+[2025-03-30 17:17:51] Detached from transaction pool shared memory
+[2025-03-30 17:17:51] Detached from blockchain ledger shared memory
+[2025-03-30 17:17:51] Removed transaction pool shared memory
+[2025-03-30 17:17:51] Removed blockchain ledger shared memory
+[2025-03-30 17:17:51] All resources cleaned up, exiting
+--- Logging session ended at 2025-03-30 17:17:51 ---
+
+[2025-03-30 17:18:05] 
+Received SIGUSR1, printing statistics...
+[2025-03-30 17:18:05] ===DEIChain Statistics===
+[2025-03-30 17:18:05] Transaction Pool Status:
+[2025-03-30 17:18:05] Miner Statistics:
+[2025-03-30 17:18:05] Validator Statistics:
+[2025-03-30 17:18:05] Blockchain Statistics:
+[2025-03-30 17:18:28] 
+Received SIGINT, shutting down...
+[2025-03-30 17:18:28] Waiting for all miner threads to finish...
+[2025-03-30 17:18:28] Miner thread 5 shutting down
+[2025-03-30 17:18:28] Miner thread 4 shutting down
+[2025-03-30 17:18:28] Miner thread 3 shutting down
+[2025-03-30 17:18:28] Miner thread 2 shutting down
+[2025-03-30 17:18:28] Miner thread 1 shutting down
+[2025-03-30 17:18:28] All miner threads terminated
+[2025-03-30 17:18:28] Detached from transaction pool shared memory
+[2025-03-30 17:18:28] Detached from blockchain ledger shared memory
+[2025-03-30 17:18:28] Removed transaction pool shared memory
+[2025-03-30 17:18:28] Removed blockchain ledger shared memory
+[2025-03-30 17:18:28] All resources cleaned up, exiting
+--- Logging session ended at 2025-03-30 17:18:28 ---
+
+
+--- New logging session started at 2025-03-30 17:21:00 ---
+[2025-03-30 17:21:00] DEIChain Controller starting up
+[2025-03-30 17:21:00] Configuration read successfully
+[2025-03-30 17:21:00] NUM_MINERS = 5
+[2025-03-30 17:21:00] TX_POOL_SIZE = 50
+[2025-03-30 17:21:00] TRANSACTIONS_PER_BLOCK = 10
+[2025-03-30 17:21:00] BLOCKCHAIN_BLOCKS = 50000
+[2025-03-30 17:21:00] Transaction pool shared memory ID: 10
+[2025-03-30 17:21:00] Blockchain ledger shared memory ID: 11
+[2025-03-30 17:21:00] Transaction pool attached at address: 0x7fc029599000
+[2025-03-30 17:21:00] Blockchain ledger attached at address: 0x7fc02955f000
+[2025-03-30 17:21:00] Signal handlers installed. Send SIGUSR1 to print statistics (kill -SIGUSR1 899)
+[2025-03-30 17:21:00] All miner threads created
+[2025-03-30 17:21:00] Miner thread 5 started
+[2025-03-30 17:21:00] Miner thread 4 started
+[2025-03-30 17:21:00] Miner thread 3 started
+[2025-03-30 17:21:00] Miner thread 2 started
+[2025-03-30 17:21:00] Miner thread 1 started
+[2025-03-30 17:25:53] 
+Received SIGINT, shutting down...
+[2025-03-30 17:25:56] Waiting for all miner threads to finish...
+[2025-03-30 17:25:56] 
+Received SIGINT, shutting down...
+[2025-03-30 17:25:56] Miner thread 1 shutting down
+[2025-03-30 17:25:57] Miner thread 2 shutting down
+[2025-03-30 17:25:57] Miner thread 4 shutting down
+[2025-03-30 17:25:57] Miner thread 3 shutting down
+[2025-03-30 17:25:57] Miner thread 5 shutting down
+[2025-03-30 17:25:57] All miner threads terminated
+[2025-03-30 17:25:57] Detached from transaction pool shared memory
+[2025-03-30 17:25:57] Detached from blockchain ledger shared memory
+[2025-03-30 17:25:57] Removed transaction pool shared memory
+[2025-03-30 17:25:57] Removed blockchain ledger shared memory
+[2025-03-30 17:25:57] All resources cleaned up, exiting
+--- Logging session ended at 2025-03-30 17:25:57 ---
+
+
+--- New logging session started at 2025-03-30 17:28:51 ---
+[2025-03-30 17:28:51] TxGen starting up
+[2025-03-30 17:28:51] Transaction generated: 36 Reward: 2 BTC Sleep time: 1000ms Value: 152.33
+[2025-03-30 17:28:57] Transaction generated: 52 Reward: 2 BTC Sleep time: 1000ms Value: 205.33
+[2025-03-30 17:29:06] Transaction generated: 55 Reward: 2 BTC Sleep time: 1000ms Value: 306.67
+[2025-03-30 17:29:16] Transaction generated: 4 Reward: 2 BTC Sleep time: 1000ms Value: 80.00
+[2025-03-30 17:29:22] Transaction generated: 68 Reward: 2 BTC Sleep time: 1000ms Value: 85.33
+[2025-03-30 17:29:28] Transaction generated: 93 Reward: 2 BTC Sleep time: 1000ms Value: 96.33
+[2025-03-30 17:29:34] Transaction generated: 19 Reward: 2 BTC Sleep time: 1000ms Value: 47.00
+[2025-03-30 17:29:43] Transaction generated: 90 Reward: 2 BTC Sleep time: 1000ms Value: 240.67
+[2025-03-30 17:29:49] Transaction generated: 54 Reward: 2 BTC Sleep time: 1000ms Value: 284.33
+[2025-03-30 17:29:55] Transaction generated: 91 Reward: 2 BTC Sleep time: 1000ms Value: 29.33
+[2025-03-30 17:30:01] Transaction generated: 30 Reward: 2 BTC Sleep time: 1000ms Value: 74.00
+[2025-03-30 17:30:07] Transaction generated: 88 Reward: 2 BTC Sleep time: 1000ms Value: 103.67
+[2025-03-30 17:30:14] Transaction generated: 12 Reward: 2 BTC Sleep time: 1000ms Value: 5.00
+[2025-03-30 17:30:23] Transaction generated: 72 Reward: 2 BTC Sleep time: 1000ms Value: 95.00
+[2025-03-30 17:30:29] Transaction generated: 16 Reward: 2 BTC Sleep time: 1000ms Value: 125.67
+[2025-03-30 17:30:35] Transaction generated: 50 Reward: 2 BTC Sleep time: 1000ms Value: 268.00
+[2025-03-30 17:30:41] Transaction generated: 86 Reward: 2 BTC Sleep time: 1000ms Value: 218.00
+[2025-03-30 17:30:48] Transaction generated: 20 Reward: 2 BTC Sleep time: 1000ms Value: 147.33
+[2025-03-30 17:31:03] Transaction generated: 74 Reward: 2 BTC Sleep time: 1000ms Value: 158.67
+[2025-03-30 17:31:09] Transaction generated: 34 Reward: 2 BTC Sleep time: 1000ms Value: 114.00
+[2025-03-30 17:31:15] Transaction generated: 32 Reward: 2 BTC Sleep time: 1000ms Value: 209.33
+[2025-03-30 17:31:21] Transaction generated: 84 Reward: 2 BTC Sleep time: 1000ms Value: 283.67
+[2025-03-30 17:31:30] Transaction generated: 21 Reward: 2 BTC Sleep time: 1000ms Value: 8.67
+[2025-03-30 17:31:36] Transaction generated: 25 Reward: 2 BTC Sleep time: 1000ms Value: 191.67
+[2025-03-30 17:31:48] Transaction generated: 31 Reward: 2 BTC Sleep time: 1000ms Value: 205.67
+
+--- New logging session started at 2025-03-30 17:31:54 ---
+[2025-03-30 17:31:54] DEIChain Controller starting up
+[2025-03-30 17:31:54] Configuration read successfully
+[2025-03-30 17:31:54] NUM_MINERS = 5
+[2025-03-30 17:31:54] TX_POOL_SIZE = 50
+[2025-03-30 17:31:54] TRANSACTIONS_PER_BLOCK = 10
+[2025-03-30 17:31:54] BLOCKCHAIN_BLOCKS = 50000
+[2025-03-30 17:31:54] Transaction pool shared memory ID: 12
+[2025-03-30 17:31:54] Blockchain ledger shared memory ID: 13
+[2025-03-30 17:31:54] Transaction pool attached at address: 0x7fbb14d57000
+[2025-03-30 17:31:54] Blockchain ledger attached at address: 0x7fbb14d1d000
+[2025-03-30 17:31:54] Signal handlers installed. Send SIGUSR1 to print statistics (kill -SIGUSR1 1243)
+[2025-03-30 17:31:54] All miner threads created
+[2025-03-30 17:31:54] Miner thread 5 started
+[2025-03-30 17:31:54] Miner thread 4 started
+[2025-03-30 17:31:54] Miner thread 3 started
+[2025-03-30 17:31:54] Miner thread 2 started
+[2025-03-30 17:31:54] Miner thread 1 started
+[2025-03-30 17:31:57] Transaction generated: 15 Reward: 2 BTC Sleep time: 1000ms Value: 87.33
+[2025-03-30 17:31:59] 
+Received SIGINT, shutting down...
+[2025-03-30 17:31:59] Waiting for all miner threads to finish...
+[2025-03-30 17:32:00] Miner thread 5 shutting down
+[2025-03-30 17:32:00] Miner thread 4 shutting down
+[2025-03-30 17:32:00] Miner thread 3 shutting down
+[2025-03-30 17:32:00] Miner thread 2 shutting down
+[2025-03-30 17:32:00] Miner thread 1 shutting down
+[2025-03-30 17:32:00] All miner threads terminated
+[2025-03-30 17:32:00] Detached from transaction pool shared memory
+[2025-03-30 17:32:00] Detached from blockchain ledger shared memory
+[2025-03-30 17:32:00] Removed transaction pool shared memory
+[2025-03-30 17:32:00] Removed blockchain ledger shared memory
+[2025-03-30 17:32:00] All resources cleaned up, exiting
+--- Logging session ended at 2025-03-30 17:32:00 ---
+
+[2025-03-30 17:32:06] Transaction generated: 39 Reward: 2 BTC Sleep time: 1000ms Value: 167.67
+[2025-03-30 17:32:12] Transaction generated: 25 Reward: 2 BTC Sleep time: 1000ms Value: 150.67
+[2025-03-30 17:32:18] Transaction generated: 18 Reward: 2 BTC Sleep time: 1000ms Value: 150.00
+[2025-03-30 17:32:24] Transaction generated: 89 Reward: 2 BTC Sleep time: 1000ms Value: 295.33
+[2025-03-30 17:32:30] Transaction generated: 27 Reward: 2 BTC Sleep time: 1000ms Value: 330.33
+[2025-03-30 17:32:36] Transaction generated: 42 Reward: 2 BTC Sleep time: 1000ms Value: 4.33
+[2025-03-30 17:32:46] Transaction generated: 46 Reward: 2 BTC Sleep time: 1000ms Value: 154.00
+[2025-03-30 17:32:54] Transaction generated: 7 Reward: 2 BTC Sleep time: 1000ms Value: 190.67
+[2025-03-30 17:33:00] Transaction generated: 39 Reward: 2 BTC Sleep time: 1000ms Value: 64.67
+[2025-03-30 17:33:08] Transaction generated: 67 Reward: 2 BTC Sleep time: 1000ms Value: 7.67
+[2025-03-30 17:33:18] Transaction generated: 22 Reward: 2 BTC Sleep time: 1000ms Value: 201.00
+[2025-03-30 17:33:22] Received SIGINT from txgen, shutting down txgen...
+--- Logging session ended at 2025-03-30 17:33:22 ---
+
