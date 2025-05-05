@@ -63,6 +63,8 @@ void logger_close(void) {
     }
     
     pthread_mutex_unlock(&log_mutex);
+    // Destroy the mutex
+    pthread_mutex_destroy(&log_mutex);
 }
 
 void log_message(const char* format, ...) {

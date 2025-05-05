@@ -1,6 +1,6 @@
 CC = gcc
 CFLAGS = -Wall -pthread -DDEBUG=0
-LDFLAGS = -pthread
+LDFLAGS = -pthread -lcrypto
 
 # Directories
 SRC_DIR = src
@@ -10,7 +10,7 @@ BIN_DIR = bin
 $(shell mkdir -p $(BIN_DIR))
 
 # Common source files
-COMMON_SOURCES = $(SRC_DIR)/logger.c
+COMMON_SOURCES = $(SRC_DIR)/logger.c $(SRC_DIR)/pow.c
 
 # Controller-specific sources
 CONTROLLER_SOURCES = $(SRC_DIR)/controller.c $(COMMON_SOURCES)
@@ -27,20 +27,21 @@ all: $(CONTROLLER_EXECUTABLE) $(TXGEN_EXECUTABLE)
 
 # Build controller
 $(CONTROLLER_EXECUTABLE): $(CONTROLLER_OBJECTS)
-	$(CC) $(LDFLAGS) $(CONTROLLER_OBJECTS) -o $@
+	$(CC) $(CONTROLLER_OBJECTS) $(LDFLAGS) -o $@
 
 # Build txgen
 $(TXGEN_EXECUTABLE): $(TXGEN_OBJECTS)
-	$(CC) $(LDFLAGS) $(TXGEN_OBJECTS) -o $@
+	$(CC) $(TXGEN_OBJECTS) $(LDFLAGS) -o $@
 
 # Generic rule for object files
 $(BIN_DIR)/%.o: $(SRC_DIR)/%.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
 # Dependencies
-$(BIN_DIR)/controller.o: $(SRC_DIR)/controller.c $(SRC_DIR)/controller.h $(SRC_DIR)/common.h $(SRC_DIR)/logger.h
+$(BIN_DIR)/controller.o: $(SRC_DIR)/controller.c $(SRC_DIR)/controller.h $(SRC_DIR)/common.h $(SRC_DIR)/logger.h $(SRC_DIR)/pow.h
 $(BIN_DIR)/txgen.o: $(SRC_DIR)/txgen.c $(SRC_DIR)/txgen.h $(SRC_DIR)/common.h $(SRC_DIR)/logger.h
 $(BIN_DIR)/logger.o: $(SRC_DIR)/logger.c $(SRC_DIR)/logger.h
+$(BIN_DIR)/pow.o: $(SRC_DIR)/pow.c $(SRC_DIR)/pow.h $(SRC_DIR)/common.h $(SRC_DIR)/logger.h
 
 # Clean everything
 clean:
