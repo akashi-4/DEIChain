@@ -13822,3 +13822,103 @@ CONTROLLER: Current Process Status:
 [2025-05-05 19:02:29] TXGEN: Received SIGINT, shutting down...
 --- Logging session ended at 2025-05-05 19:02:29 ---
 
+
+--- New logging session started at 2025-05-07 10:56:56 ---
+[2025-05-07 10:56:56] CONTROLLER: DEIChain Controller starting up
+[2025-05-07 10:56:56] Configuration read successfully
+[2025-05-07 10:56:56] NUM_MINERS = 5
+[2025-05-07 10:56:56] TX_POOL_SIZE = 10
+[2025-05-07 10:56:56] TRANSACTIONS_PER_BLOCK = 10
+[2025-05-07 10:56:56] BLOCKCHAIN_BLOCKS = 50000
+[2025-05-07 10:56:56] CONTROLLER: Transaction pool semaphore created with count 10
+[2025-05-07 10:56:56] Transaction pool shared memory ID: 0
+[2025-05-07 10:56:56] Blockchain ledger shared memory ID: 1
+[2025-05-07 10:56:56] Transaction pool attached at address: 0x7f33be156000
+[2025-05-07 10:56:56] Blockchain ledger attached at address: 0x7f33be155000
+[2025-05-07 10:56:56] CONTROLLER: Message queue created successfully with ID 0
+[2025-05-07 10:56:56] CONTROLLER: Signal handlers installed. Send SIGUSR1 to print statistics (kill -SIGUSR1 1544)
+[2025-05-07 10:56:56] CONTROLLER: Created miner process with PID 1545
+[2025-05-07 10:56:56] MINER: Successfully accessed transaction pool
+[2025-05-07 10:56:56] CONTROLLER: Created validator process with PID 1546
+[2025-05-07 10:56:56] MINER: Successfully created miner thread 1
+[2025-05-07 10:56:56] CONTROLLER: Created statistics process with PID 1548
+[2025-05-07 10:56:56] MINER: Thread 1 started
+[2025-05-07 10:56:56] MINER: Thread 1 - Not enough transactions in pool, waiting...
+[2025-05-07 10:56:56] MINER: Thread 2 started
+[2025-05-07 10:56:56] MINER: Thread 2 - Not enough transactions in pool, waiting...
+[2025-05-07 10:56:56] MINER: Successfully created miner thread 2
+[2025-05-07 10:56:56] MINER: Successfully created miner thread 3
+[2025-05-07 10:56:56] MINER: Thread 3 started
+[2025-05-07 10:56:56] MINER: Thread 3 - Not enough transactions in pool, waiting...
+[2025-05-07 10:56:56] MINER: Thread 4 started
+[2025-05-07 10:56:56] MINER: Thread 4 - Not enough transactions in pool, waiting...
+[2025-05-07 10:56:56] MINER: Successfully created miner thread 4
+[2025-05-07 10:56:56] MINER: Successfully created miner thread 5
+[2025-05-07 10:56:56] Waiting for all miner threads to finish...
+[2025-05-07 10:56:56] MINER: Thread 5 started
+[2025-05-07 10:56:56] MINER: Thread 5 - Not enough transactions in pool, waiting...
+
+--- New logging session started at 2025-05-07 10:57:17 ---
+[2025-05-07 10:57:17] TXGEN: Starting with reward=3, sleep_time=500ms
+[2025-05-07 10:57:17] TXGEN: Added transaction 1651000 to pool at position 0
+[2025-05-07 10:57:17] TXGEN: Transaction 1651000 generated with reward 3 and value 206.33
+[2025-05-07 10:57:17] TXGEN: Added transaction 1651001 to pool at position 1
+[2025-05-07 10:57:17] TXGEN: Transaction 1651001 generated with reward 3 and value 263.33
+[2025-05-07 10:57:18] TXGEN: Added transaction 1651002 to pool at position 2
+[2025-05-07 10:57:18] TXGEN: Transaction 1651002 generated with reward 3 and value 103.67
+[2025-05-07 10:57:18] TXGEN: Added transaction 1651003 to pool at position 3
+[2025-05-07 10:57:18] TXGEN: Transaction 1651003 generated with reward 3 and value 306.67
+[2025-05-07 10:57:19] TXGEN: Added transaction 1651004 to pool at position 4
+[2025-05-07 10:57:19] TXGEN: Transaction 1651004 generated with reward 3 and value 96.33
+[2025-05-07 10:57:19] TXGEN: Added transaction 1651005 to pool at position 5
+[2025-05-07 10:57:19] TXGEN: Transaction 1651005 generated with reward 3 and value 294.33
+[2025-05-07 10:57:20] TXGEN: Added transaction 1651006 to pool at position 6
+[2025-05-07 10:57:20] TXGEN: Transaction 1651006 generated with reward 3 and value 241.33
+[2025-05-07 10:57:20] TXGEN: Added transaction 1651007 to pool at position 7
+[2025-05-07 10:57:20] TXGEN: Transaction 1651007 generated with reward 3 and value 129.67
+[2025-05-07 10:57:21] TXGEN: Added transaction 1651008 to pool at position 8
+[2025-05-07 10:57:21] TXGEN: Transaction 1651008 generated with reward 3 and value 325.67
+[2025-05-07 10:57:21] TXGEN: Added transaction 1651009 to pool at position 9
+[2025-05-07 10:57:21] TXGEN: Transaction 1651009 generated with reward 3 and value 310.00
+[2025-05-07 10:58:56] TXGEN: Received SIGINT, shutting down...
+--- Logging session ended at 2025-05-07 10:58:56 ---
+
+[2025-05-07 10:58:58] 
+Received SIGINT, shutting down...
+[2025-05-07 10:58:58] 
+Received SIGINT, shutting down...
+[2025-05-07 10:58:58] 
+Received SIGINT, shutting down...
+[2025-05-07 10:58:58] 
+Received SIGINT, shutting down...
+[2025-05-07 10:58:58] CONTROLLER: Beginning shutdown sequence...
+[2025-05-07 10:58:58] CONTROLLER: Beginning process termination...
+[2025-05-07 10:58:58] 
+CONTROLLER: Current Process Status:
+[2025-05-07 10:58:58] Validator Process (PID: 1546): [2025-05-07 10:58:58] Running
+[2025-05-07 10:58:58] Statistics Process (PID: 1548): [2025-05-07 10:58:58] Running
+[2025-05-07 10:58:58] Miner Process (PID: 1545): [2025-05-07 10:58:58] Running
+[2025-05-07 10:58:58] 
+[2025-05-07 10:58:58] CONTROLLER: Sending SIGTERM to validator (PID: 1546)
+[2025-05-07 10:58:58] CONTROLLER: Sending SIGTERM to statistics (PID: 1548)
+[2025-05-07 10:58:58] CONTROLLER: Sending SIGTERM to miner process (PID: 1545)
+[2025-05-07 10:58:58] CONTROLLER: Process 1546 killed by signal 15
+[2025-05-07 10:58:58] CONTROLLER: Process 1545 killed by signal 15
+[2025-05-07 10:58:58] CONTROLLER: Process 1548 killed by signal 11
+[2025-05-07 10:58:58] 
+CONTROLLER: Current Process Status:
+[2025-05-07 10:58:58] Validator Process (PID: 1546): [2025-05-07 10:58:58] Not running
+[2025-05-07 10:58:58] Statistics Process (PID: 1548): [2025-05-07 10:58:58] Not running
+[2025-05-07 10:58:58] Miner Process (PID: 1545): [2025-05-07 10:58:58] Not running
+[2025-05-07 10:58:58] 
+[2025-05-07 10:58:58] CONTROLLER: Process termination completed
+[2025-05-07 10:58:58] CONTROLLER: Transaction pool semaphore removed
+[2025-05-07 10:58:58] Detached from transaction pool shared memory
+[2025-05-07 10:58:58] Detached from blockchain ledger shared memory
+[2025-05-07 10:58:58] Removed transaction pool shared memory
+[2025-05-07 10:58:58] Removed blockchain ledger shared memory
+[2025-05-07 10:58:58] CONTROLLER: Removing message queue...
+[2025-05-07 10:58:58] CONTROLLER: Message queue removed successfully
+[2025-05-07 10:58:58] CONTROLLER: All resources cleaned up, exiting
+--- Logging session ended at 2025-05-07 10:58:58 ---
+

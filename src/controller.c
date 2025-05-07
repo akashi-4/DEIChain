@@ -125,12 +125,12 @@ void setup_shared_memory(Config config) {
     // Create and initialize the semaphore first
     // Unlink any existing semaphore
     sem_unlink(TX_POOL_SEM);
-    tx_pool_sem = sem_open(TX_POOL_SEM, O_CREAT, 0644, 1);
+    tx_pool_sem = sem_open(TX_POOL_SEM, O_CREAT, 0644, config.tx_pool_size);
     if (tx_pool_sem == SEM_FAILED) {
         perror("CONTROLLER: Failed to create semaphore");
         exit(1);
     }
-    log_message("CONTROLLER: Transaction pool semaphore created\n");
+    log_message("CONTROLLER: Transaction pool semaphore created with count %d\n", config.tx_pool_size);
 
     // Size of pool and ledger
     size_t pool_size = sizeof(TransactionPool) + config.tx_pool_size * sizeof(TransactionEntry);
@@ -192,7 +192,8 @@ void setup_shared_memory(Config config) {
 
 
     // Initialize the blockchain ledger
-    //...
+    blockchain_ledger->num_blocks = 0;
+    strncpy(blockchain_ledger->blocks[0].prev_hash, INITIAL_HASH, HASH_SIZE);
 }
 
 // Function to clean up shared memory
@@ -498,7 +499,7 @@ void miner_process(int num_miners) {
 int wait_for_miner_threads() {
     if (miner_threads == NULL) return 0;
     
-    log_message("Waiting for all miner threads to finish...\n");
+    //log_message("Waiting for all miner threads to finish...\n");
     
     // Wait for all Miner threads to complete
     for (int i = 0; i < num_miners_global; i++) {

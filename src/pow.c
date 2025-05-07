@@ -34,6 +34,8 @@ unsigned char *serialize_block(const Block *block, size_t *sz_buf, int transacti
     unsigned char *buffer = malloc(*sz_buf);
     if (!buffer) return NULL;
 
+    memset(buffer, 0, *sz_buf);
+
     unsigned char *p = buffer;
 
     // Copy txb_id

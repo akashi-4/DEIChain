@@ -79,16 +79,16 @@ TransactionPool* access_transaction_pool() {
 
 // Function to add a transaction to the pool with semaphore protection
 int add_transaction_to_pool(Transaction tx) {
-    int result = -1;
-
-    // Wait for semaphore
+    // Try to acquire the semaphore - this will block if no slots are available
     if (sem_wait(tx_pool_sem) == -1) {
         perror("TXGEN: Failed to lock semaphore");
         return -1;
     }
 
     // Critical section
+    int result = -1;
     if (transaction_pool != NULL) {
+        // Find the first empty slot
         for (int i = 0; i < transaction_pool->size; i++) {
             if (transaction_pool->entries[i].empty) {
                 transaction_pool->entries[i].empty = 0;
@@ -102,13 +102,22 @@ int add_transaction_to_pool(Transaction tx) {
         }
     }
 
-    // Release semaphore
-    if (sem_post(tx_pool_sem) == -1) {
-        perror("TXGEN: Failed to unlock semaphore");
-        return -1;
+    // If we couldn't add the transaction, release the semaphore
+    if (result == -1) {
+        sem_post(tx_pool_sem);
     }
 
     return result;
+}
+
+// Function to remove a transaction from the pool
+void remove_transaction_from_pool(int position) {
+    if (position >= 0 && position < transaction_pool->size) {
+        transaction_pool->entries[position].empty = 1;
+        transaction_pool->transactions_pending--;
+        // Release the semaphore to indicate a slot is now available
+        sem_post(tx_pool_sem);
+    }
 }
 
 int main(int argc, char *argv[]) {
