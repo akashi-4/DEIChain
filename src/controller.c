@@ -324,8 +324,20 @@ void *miner_thread(void *arg) {
     log_message("MINER: Thread %d started\n", id);
     int printin = 1;
 
-    // Thread main loop
     while (running_miner_threads) {
+        pthread_mutex_lock(&transaction_pool->mutex);
+        while (running_miner_threads && 
+               transaction_pool->transactions_pending < transaction_pool->num_transactions_per_block) {
+            pthread_cond_wait(&transaction_pool->enough_tx, &transaction_pool->mutex);
+        }
+        
+        // Check if we were woken up for shutdown
+        if (!running_miner_threads) {
+            pthread_mutex_unlock(&transaction_pool->mutex);
+            break;
+        }
+        pthread_mutex_unlock(&transaction_pool->mutex);
+
         // Try to get random transactions
         Transaction* selected_tx = get_random_transactions(num_transactions_per_block_global);
         if (selected_tx != NULL) {
@@ -370,7 +382,15 @@ void *miner_thread(void *arg) {
 void signal_handler(int signum) {
     if (signum == SIGINT) {
         log_message("\nReceived SIGINT, shutting down...\n");
-        running_miner_threads = 0;  // Set flag to terminate threads
+        running_miner_threads = 0;  // Signal threads to stop
+        
+        // Wake up all waiting threads by modifying the condition they're waiting on
+        pthread_mutex_lock(&transaction_pool->mutex);
+        // Artificially set transactions_pending to trigger the wake-up condition
+        transaction_pool->transactions_pending = transaction_pool->num_transactions_per_block;
+        // Broadcast to wake up ALL waiting threads
+        pthread_cond_broadcast(&transaction_pool->enough_tx);
+        pthread_mutex_unlock(&transaction_pool->mutex);
     } else if (signum == SIGUSR1) {
         log_message("\nReceived SIGUSR1, printing statistics...\n");
         print_stats_flag = 1;  // Set flag to print statistics
@@ -535,7 +555,7 @@ void miner_process(int num_miners) {
 int wait_for_miner_threads() {
     if (miner_threads == NULL) return 0;
     
-    //log_message("Waiting for all miner threads to finish...\n");
+    log_message("Waiting for all miner threads to finish...\n");
     
     // Wait for all Miner threads to complete
     for (int i = 0; i < num_miners_global; i++) {
@@ -550,7 +570,9 @@ int wait_for_miner_threads() {
     free(thread_ids);
     miner_threads = NULL;
     thread_ids = NULL;
-    
+
+    log_message("All miner threads have finished\n");
+    log_message("MINER: Process shutting down\n");
     return 1;
 }
 
@@ -644,6 +666,7 @@ void update_statistics(MessageToStatistics message){
     }   
     stats.avg_time_to_verify_transaction /= num_transactions_per_block_global;
 }
+
 void statistics_process(){
     // Print the statistics when SIGUSR1 is received
     signal(SIGUSR1, print_statistics);
@@ -820,7 +843,9 @@ void print_process_status() {
 
 void terminate_processes() {
     log_message("CONTROLLER: Beginning process termination...\n");
+    #if DEBUG
     print_process_status();  // Print status before termination
+    #endif
     
     // Send SIGTERM to specific processes first
     if (validator_pid > 0) {
@@ -832,6 +857,8 @@ void terminate_processes() {
         kill(statistics_pid, SIGTERM);
     }
     if (miner_process_pid > 0) {
+        // Wait for all miner threads to finish
+        wait_for_miner_threads();
         log_message("CONTROLLER: Sending SIGTERM to miner process (PID: %d)\n", miner_process_pid);
         kill(miner_process_pid, SIGTERM);
     }
@@ -865,9 +892,10 @@ void terminate_processes() {
         
         usleep(100000);  // Sleep for 100ms between checks
     }
-    
+    #if DEBUG
     print_process_status();  // Print final status
     log_message("CONTROLLER: Process termination completed\n");
+    #endif
 }
 
 int main(int argc, char *argv[]) {
@@ -905,6 +933,9 @@ int main(int argc, char *argv[]) {
     
     log_message("CONTROLLER: Beginning shutdown sequence...\n");
     
+    // Terminate the miner process
+    
+
     // First terminate all processes
     terminate_processes();
     

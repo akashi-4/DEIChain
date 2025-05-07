@@ -14131,3 +14131,126 @@ CONTROLLER: Current Process Status:
 [2025-05-07 18:20:24] TXGEN: Received SIGINT, shutting down...
 --- Logging session ended at 2025-05-07 18:20:24 ---
 
+
+--- New logging session started at 2025-05-07 21:46:13 ---
+[2025-05-07 21:46:13] CONTROLLER: DEIChain Controller starting up
+[2025-05-07 21:46:13] Configuration read successfully
+[2025-05-07 21:46:13] NUM_MINERS = 5
+[2025-05-07 21:46:13] TX_POOL_SIZE = 50
+[2025-05-07 21:46:13] TRANSACTIONS_PER_BLOCK = 10
+[2025-05-07 21:46:13] BLOCKCHAIN_BLOCKS = 50000
+[2025-05-07 21:46:13] CONTROLLER: Transaction pool semaphore created with count 50
+[2025-05-07 21:46:13] Transaction pool shared memory ID: 0
+[2025-05-07 21:46:13] Blockchain ledger shared memory ID: 1
+[2025-05-07 21:46:13] Transaction pool attached at address: 0x7fb519b05000
+[2025-05-07 21:46:13] Blockchain ledger attached at address: 0x7fb519b04000
+[2025-05-07 21:46:13] CONTROLLER: Message queue created successfully with ID 0
+[2025-05-07 21:46:13] CONTROLLER: Signal handlers installed. Send SIGUSR1 to print statistics (kill -SIGUSR1 436)
+[2025-05-07 21:46:13] CONTROLLER: Created miner process with PID 437
+[2025-05-07 21:46:13] MINER: Successfully accessed transaction pool
+[2025-05-07 21:46:13] CONTROLLER: Created validator process with PID 438
+[2025-05-07 21:46:13] MINER: Successfully created miner thread 1
+[2025-05-07 21:46:13] CONTROLLER: Created statistics process with PID 440
+[2025-05-07 21:46:13] MINER: Thread 1 started
+[2025-05-07 21:46:13] MINER: Successfully created miner thread 2
+[2025-05-07 21:46:13] MINER: Thread 2 started
+[2025-05-07 21:46:13] MINER: Successfully created miner thread 3
+[2025-05-07 21:46:13] MINER: Thread 3 started
+[2025-05-07 21:46:13] MINER: Successfully created miner thread 4
+[2025-05-07 21:46:13] MINER: Thread 4 started
+[2025-05-07 21:46:13] MINER: Successfully created miner thread 5
+[2025-05-07 21:46:13] Waiting for all miner threads to finish...
+[2025-05-07 21:46:13] MINER: Thread 5 started
+[2025-05-07 21:46:16] 
+Received SIGINT, shutting down...
+[2025-05-07 21:46:16] 
+Received SIGINT, shutting down...
+[2025-05-07 21:46:16] 
+Received SIGINT, shutting down...
+[2025-05-07 21:46:16] 
+Received SIGINT, shutting down...
+[2025-05-07 21:46:16] MINER: Thread 5 shutting down
+[2025-05-07 21:46:16] CONTROLLER: Beginning shutdown sequence...
+[2025-05-07 21:46:16] MINER: Thread 1 shutting down
+[2025-05-07 21:46:16] CONTROLLER: Beginning process termination...
+[2025-05-07 21:46:16] MINER: Thread 2 shutting down
+[2025-05-07 21:46:16] CONTROLLER: Sending SIGTERM to validator (PID: 438)
+[2025-05-07 21:46:16] MINER: Thread 4 shutting down
+[2025-05-07 21:46:16] CONTROLLER: Sending SIGTERM to statistics (PID: 440)
+[2025-05-07 21:46:16] MINER: Thread 3 shutting down
+[2025-05-07 21:46:16] CONTROLLER: Sending SIGTERM to miner process (PID: 437)
+[2025-05-07 21:46:16] CONTROLLER: Process 438 killed by signal 15
+[2025-05-07 21:46:16] CONTROLLER: Process 437 killed by signal 15
+[2025-05-07 21:46:16] CONTROLLER: Process 440 killed by signal 11
+[2025-05-07 21:46:16] CONTROLLER: Transaction pool semaphore removed
+[2025-05-07 21:46:16] Detached from transaction pool shared memory
+[2025-05-07 21:46:16] Detached from blockchain ledger shared memory
+[2025-05-07 21:46:16] Removed transaction pool shared memory
+[2025-05-07 21:46:16] Removed blockchain ledger shared memory
+[2025-05-07 21:46:16] CONTROLLER: Removing message queue...
+[2025-05-07 21:46:16] CONTROLLER: Message queue removed successfully
+[2025-05-07 21:46:16] CONTROLLER: All resources cleaned up, exiting
+--- Logging session ended at 2025-05-07 21:46:16 ---
+
+
+--- New logging session started at 2025-05-07 21:47:23 ---
+[2025-05-07 21:47:23] CONTROLLER: DEIChain Controller starting up
+[2025-05-07 21:47:23] Configuration read successfully
+[2025-05-07 21:47:23] NUM_MINERS = 5
+[2025-05-07 21:47:23] TX_POOL_SIZE = 50
+[2025-05-07 21:47:23] TRANSACTIONS_PER_BLOCK = 10
+[2025-05-07 21:47:23] BLOCKCHAIN_BLOCKS = 50000
+[2025-05-07 21:47:23] CONTROLLER: Transaction pool semaphore created with count 50
+[2025-05-07 21:47:23] Transaction pool shared memory ID: 2
+[2025-05-07 21:47:23] Blockchain ledger shared memory ID: 3
+[2025-05-07 21:47:23] Transaction pool attached at address: 0x7f3af9fff000
+[2025-05-07 21:47:23] Blockchain ledger attached at address: 0x7f3af9ffe000
+[2025-05-07 21:47:23] CONTROLLER: Message queue created successfully with ID 1
+[2025-05-07 21:47:23] CONTROLLER: Signal handlers installed. Send SIGUSR1 to print statistics (kill -SIGUSR1 474)
+[2025-05-07 21:47:23] CONTROLLER: Created miner process with PID 475
+[2025-05-07 21:47:23] MINER: Successfully accessed transaction pool
+[2025-05-07 21:47:23] CONTROLLER: Created validator process with PID 476
+[2025-05-07 21:47:23] MINER: Successfully created miner thread 1
+[2025-05-07 21:47:23] CONTROLLER: Created statistics process with PID 478
+[2025-05-07 21:47:23] MINER: Thread 1 started
+[2025-05-07 21:47:23] MINER: Successfully created miner thread 2
+[2025-05-07 21:47:23] MINER: Thread 2 started
+[2025-05-07 21:47:23] MINER: Successfully created miner thread 3
+[2025-05-07 21:47:23] MINER: Thread 3 started
+[2025-05-07 21:47:23] MINER: Successfully created miner thread 4
+[2025-05-07 21:47:23] MINER: Thread 4 started
+[2025-05-07 21:47:23] MINER: Successfully created miner thread 5
+[2025-05-07 21:47:23] Waiting for all miner threads to finish...
+[2025-05-07 21:47:23] MINER: Thread 5 started
+[2025-05-07 21:50:14] 
+Received SIGINT, shutting down...
+[2025-05-07 21:50:14] 
+Received SIGINT, shutting down...
+[2025-05-07 21:50:14] 
+Received SIGINT, shutting down...
+[2025-05-07 21:50:14] 
+Received SIGINT, shutting down...
+[2025-05-07 21:50:14] MINER: Thread 1 shutting down
+[2025-05-07 21:50:14] CONTROLLER: Beginning shutdown sequence...
+[2025-05-07 21:50:14] MINER: Thread 5 shutting down
+[2025-05-07 21:50:14] CONTROLLER: Beginning process termination...
+[2025-05-07 21:50:14] MINER: Thread 3 shutting down
+[2025-05-07 21:50:14] CONTROLLER: Sending SIGTERM to validator (PID: 476)
+[2025-05-07 21:50:14] MINER: Thread 4 shutting down
+[2025-05-07 21:50:14] CONTROLLER: Sending SIGTERM to statistics (PID: 478)
+[2025-05-07 21:50:14] MINER: Thread 2 shutting down
+[2025-05-07 21:50:14] CONTROLLER: Sending SIGTERM to miner process (PID: 475)
+[2025-05-07 21:50:14] All miner threads have finished
+[2025-05-07 21:50:14] CONTROLLER: Process 476 killed by signal 15
+[2025-05-07 21:50:14] CONTROLLER: Process 475 killed by signal 15
+[2025-05-07 21:50:14] CONTROLLER: Process 478 killed by signal 11
+[2025-05-07 21:50:14] CONTROLLER: Transaction pool semaphore removed
+[2025-05-07 21:50:14] Detached from transaction pool shared memory
+[2025-05-07 21:50:14] Detached from blockchain ledger shared memory
+[2025-05-07 21:50:14] Removed transaction pool shared memory
+[2025-05-07 21:50:14] Removed blockchain ledger shared memory
+[2025-05-07 21:50:14] CONTROLLER: Removing message queue...
+[2025-05-07 21:50:14] CONTROLLER: Message queue removed successfully
+[2025-05-07 21:50:14] CONTROLLER: All resources cleaned up, exiting
+--- Logging session ended at 2025-05-07 21:50:14 ---
+
