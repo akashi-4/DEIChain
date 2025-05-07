@@ -6,23 +6,8 @@
 #ifndef COMMON_H
 #define COMMON_H
 
-#include <time.h>
-#include <openssl/sha.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <string.h>
-#include <sys/types.h>
-#include <sys/wait.h>
-#include <signal.h>
-#include <pthread.h>
-#include <sys/ipc.h>
-#include <sys/msg.h>
-#include <sys/shm.h>
-#include <semaphore.h>
-#include <fcntl.h>
-#include <sys/stat.h>
-#include <sys/errno.h>
+#include <time.h>  // Needed for time_t
+#include <pthread.h>  // Needed for pthread_cond_t and pthread_mutex_t
 
 // Shared memory keys
 #define TX_POOL_KEY_PATH "/tmp"       // Path for ftok
@@ -35,7 +20,6 @@
 
 #define TX_ID_LEN 64
 #define TXB_ID_LEN 64
-
 
 // Semaphore names
 #define TX_POOL_SEM "/tx_pool_sem"    // Semaphore for transaction pool access
@@ -75,6 +59,9 @@ typedef struct {
 typedef struct {
     int size;                   // Size of the pool (TX_POOL_SIZE from config)
     int transactions_pending;   // Number of pending transactions
+    int num_transactions_per_block;  // Number of transactions needed per block
+    pthread_mutex_t mutex;      // Mutex for condition variable
+    pthread_cond_t enough_tx;   // Condition variable to signal when enough transactions are available
     TransactionEntry entries[]; // Flexible array member for the transaction entries
 } TransactionPool;
 

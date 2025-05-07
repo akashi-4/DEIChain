@@ -97,6 +97,13 @@ int add_transaction_to_pool(Transaction tx) {
                 transaction_pool->transactions_pending++;
                 result = i;
                 log_message("TXGEN: Added transaction %d to pool at position %d\n", tx.tx_id, i);
+                
+                // If we now have enough transactions for a block, signal the condition variable
+                if (transaction_pool->transactions_pending >= transaction_pool->num_transactions_per_block) {
+                    pthread_mutex_lock(&transaction_pool->mutex);
+                    pthread_cond_signal(&transaction_pool->enough_tx);
+                    pthread_mutex_unlock(&transaction_pool->mutex);
+                }
                 break;
             }
         }

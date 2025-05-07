@@ -13922,3 +13922,212 @@ CONTROLLER: Current Process Status:
 [2025-05-07 10:58:58] CONTROLLER: All resources cleaned up, exiting
 --- Logging session ended at 2025-05-07 10:58:58 ---
 
+
+--- New logging session started at 2025-05-07 18:19:28 ---
+[2025-05-07 18:19:28] CONTROLLER: DEIChain Controller starting up
+[2025-05-07 18:19:28] Configuration read successfully
+[2025-05-07 18:19:28] NUM_MINERS = 5
+[2025-05-07 18:19:28] TX_POOL_SIZE = 50
+[2025-05-07 18:19:28] TRANSACTIONS_PER_BLOCK = 10
+[2025-05-07 18:19:28] BLOCKCHAIN_BLOCKS = 50000
+[2025-05-07 18:19:28] CONTROLLER: Transaction pool semaphore created with count 50
+[2025-05-07 18:19:28] Transaction pool shared memory ID: 0
+[2025-05-07 18:19:28] Blockchain ledger shared memory ID: 1
+[2025-05-07 18:19:28] Transaction pool attached at address: 0x7fcc81ea1000
+[2025-05-07 18:19:28] Blockchain ledger attached at address: 0x7fcc81ea0000
+[2025-05-07 18:19:28] CONTROLLER: Message queue created successfully with ID 0
+[2025-05-07 18:19:28] CONTROLLER: Signal handlers installed. Send SIGUSR1 to print statistics (kill -SIGUSR1 983)
+[2025-05-07 18:19:28] CONTROLLER: Created miner process with PID 984
+[2025-05-07 18:19:28] MINER: Successfully accessed transaction pool
+[2025-05-07 18:19:28] CONTROLLER: Created validator process with PID 985
+[2025-05-07 18:19:28] MINER: Successfully created miner thread 1
+[2025-05-07 18:19:28] CONTROLLER: Created statistics process with PID 987
+[2025-05-07 18:19:28] MINER: Thread 1 started
+[2025-05-07 18:19:28] MINER: Successfully created miner thread 2
+[2025-05-07 18:19:28] MINER: Thread 2 started
+[2025-05-07 18:19:28] MINER: Successfully created miner thread 3
+[2025-05-07 18:19:28] MINER: Thread 3 started
+[2025-05-07 18:19:28] MINER: Successfully created miner thread 4
+[2025-05-07 18:19:28] MINER: Thread 4 started
+[2025-05-07 18:19:28] MINER: Successfully created miner thread 5
+[2025-05-07 18:19:28] MINER: Thread 5 started
+
+--- New logging session started at 2025-05-07 18:19:54 ---
+[2025-05-07 18:19:54] TXGEN: Starting with reward=3, sleep_time=700ms
+[2025-05-07 18:19:54] TXGEN: Added transaction 1038000 to pool at position 0
+[2025-05-07 18:19:54] TXGEN: Transaction 1038000 generated with reward 3 and value 241.00
+[2025-05-07 18:19:55] TXGEN: Added transaction 1038001 to pool at position 1
+[2025-05-07 18:19:55] TXGEN: Transaction 1038001 generated with reward 3 and value 64.00
+[2025-05-07 18:19:55] TXGEN: Added transaction 1038002 to pool at position 2
+[2025-05-07 18:19:55] TXGEN: Transaction 1038002 generated with reward 3 and value 128.67
+[2025-05-07 18:19:56] TXGEN: Added transaction 1038003 to pool at position 3
+[2025-05-07 18:19:56] TXGEN: Transaction 1038003 generated with reward 3 and value 299.00
+[2025-05-07 18:19:57] TXGEN: Added transaction 1038004 to pool at position 4
+[2025-05-07 18:19:57] TXGEN: Transaction 1038004 generated with reward 3 and value 100.00
+[2025-05-07 18:19:58] TXGEN: Added transaction 1038005 to pool at position 5
+[2025-05-07 18:19:58] TXGEN: Transaction 1038005 generated with reward 3 and value 228.67
+[2025-05-07 18:19:58] TXGEN: Added transaction 1038006 to pool at position 6
+[2025-05-07 18:19:58] TXGEN: Transaction 1038006 generated with reward 3 and value 82.33
+[2025-05-07 18:19:59] TXGEN: Added transaction 1038007 to pool at position 7
+[2025-05-07 18:19:59] TXGEN: Transaction 1038007 generated with reward 3 and value 43.33
+[2025-05-07 18:20:00] TXGEN: Added transaction 1038008 to pool at position 8
+[2025-05-07 18:20:00] TXGEN: Transaction 1038008 generated with reward 3 and value 174.33
+[2025-05-07 18:20:00] TXGEN: Added transaction 1038009 to pool at position 9
+[2025-05-07 18:20:00] TXGEN: Transaction 1038009 generated with reward 3 and value 326.33
+[2025-05-07 18:20:00] MINER: Thread 1 selected 10 transactions
+[2025-05-07 18:20:01] TXGEN: Added transaction 1038010 to pool at position 10
+[2025-05-07 18:20:01] TXGEN: Transaction 1038010 generated with reward 3 and value 36.67
+[2025-05-07 18:20:01] MINER: Thread 2 selected 10 transactions
+[2025-05-07 18:20:02] TXGEN: Added transaction 1038011 to pool at position 11
+[2025-05-07 18:20:02] MINER: Thread 3 selected 10 transactions
+[2025-05-07 18:20:02] TXGEN: Transaction 1038011 generated with reward 3 and value 239.00
+[2025-05-07 18:20:02] TXGEN: Added transaction 1038012 to pool at position 12
+[2025-05-07 18:20:02] TXGEN: Transaction 1038012 generated with reward 3 and value 130.67
+[2025-05-07 18:20:02] MINER: Thread 4 selected 10 transactions
+[2025-05-07 18:20:03] TXGEN: Added transaction 1038013 to pool at position 13
+[2025-05-07 18:20:03] TXGEN: Transaction 1038013 generated with reward 3 and value 185.67
+[2025-05-07 18:20:03] MINER: Thread 5 selected 10 transactions
+[2025-05-07 18:20:04] MINER: Found valid hash after 677565 operations
+[2025-05-07 18:20:04] MINER: Thread 3 successfully mined block 3 with hash 000000a102bb7592811ffe1c1bf4e1736d5358b60a2770302c63ccfa9c69e671
+[2025-05-07 18:20:04] TXGEN: Added transaction 1038014 to pool at position 14
+[2025-05-07 18:20:04] TXGEN: Transaction 1038014 generated with reward 3 and value 149.67
+[2025-05-07 18:20:05] TXGEN: Added transaction 1038015 to pool at position 15
+[2025-05-07 18:20:05] TXGEN: Transaction 1038015 generated with reward 3 and value 208.67
+[2025-05-07 18:20:05] MINER: Thread 3 selected 10 transactions
+[2025-05-07 18:20:05] TXGEN: Added transaction 1038016 to pool at position 16
+[2025-05-07 18:20:05] TXGEN: Transaction 1038016 generated with reward 3 and value 86.00
+[2025-05-07 18:20:06] TXGEN: Added transaction 1038017 to pool at position 17
+[2025-05-07 18:20:06] TXGEN: Transaction 1038017 generated with reward 3 and value 132.67
+[2025-05-07 18:20:07] TXGEN: Added transaction 1038018 to pool at position 18
+[2025-05-07 18:20:07] TXGEN: Transaction 1038018 generated with reward 3 and value 294.33
+[2025-05-07 18:20:07] MINER: Found valid hash after 2235029 operations
+[2025-05-07 18:20:07] MINER: Thread 1 successfully mined block 1 with hash 000004d8a852a5d149aa4234d2398acf2e1d8f9041e5b7838e2b8fa96e95f50e
+[2025-05-07 18:20:07] MINER: Found valid hash after 2122901 operations
+[2025-05-07 18:20:07] MINER: Thread 2 successfully mined block 2 with hash 00000bafa7dcbe153137a228db46fa444534f72adca41e294d099a922a0c8db0
+[2025-05-07 18:20:07] TXGEN: Added transaction 1038019 to pool at position 19
+[2025-05-07 18:20:07] TXGEN: Transaction 1038019 generated with reward 3 and value 57.67
+[2025-05-07 18:20:08] MINER: Thread 1 selected 10 transactions
+[2025-05-07 18:20:08] MINER: Thread 2 selected 10 transactions
+[2025-05-07 18:20:08] TXGEN: Added transaction 1038020 to pool at position 20
+[2025-05-07 18:20:08] TXGEN: Transaction 1038020 generated with reward 3 and value 28.67
+[2025-05-07 18:20:09] MINER: Found valid hash after 293686 operations
+[2025-05-07 18:20:09] MINER: Thread 1 successfully mined block 1 with hash 00000101260cc23b9f619734a2256ebfd20c8a807622fcb19c04a80e99d18149
+[2025-05-07 18:20:09] TXGEN: Added transaction 1038021 to pool at position 21
+[2025-05-07 18:20:09] TXGEN: Transaction 1038021 generated with reward 3 and value 109.67
+[2025-05-07 18:20:09] MINER: Found valid hash after 1912695 operations
+[2025-05-07 18:20:09] MINER: Thread 5 successfully mined block 5 with hash 00000309ad01e9d1ddc3dc0810370cf55dddf06e622179b354401531bbca089d
+[2025-05-07 18:20:10] TXGEN: Added transaction 1038022 to pool at position 22
+[2025-05-07 18:20:10] TXGEN: Transaction 1038022 generated with reward 3 and value 184.00
+[2025-05-07 18:20:10] MINER: Thread 1 selected 10 transactions
+[2025-05-07 18:20:10] MINER: Thread 5 selected 10 transactions
+[2025-05-07 18:20:10] TXGEN: Added transaction 1038023 to pool at position 23
+[2025-05-07 18:20:10] TXGEN: Transaction 1038023 generated with reward 3 and value 18.67
+[2025-05-07 18:20:11] TXGEN: Added transaction 1038024 to pool at position 24
+[2025-05-07 18:20:11] TXGEN: Transaction 1038024 generated with reward 3 and value 261.67
+[2025-05-07 18:20:12] TXGEN: Added transaction 1038025 to pool at position 25
+[2025-05-07 18:20:12] TXGEN: Transaction 1038025 generated with reward 3 and value 254.00
+[2025-05-07 18:20:12] MINER: Found valid hash after 747090 operations
+[2025-05-07 18:20:12] MINER: Thread 5 successfully mined block 5 with hash 0000034368c5345dd2c7a301986b822faecd1f19930add6e42ae6c4c2260efeb
+[2025-05-07 18:20:12] TXGEN: Added transaction 1038026 to pool at position 26
+[2025-05-07 18:20:12] TXGEN: Transaction 1038026 generated with reward 3 and value 320.67
+[2025-05-07 18:20:13] TXGEN: Added transaction 1038027 to pool at position 27
+[2025-05-07 18:20:13] TXGEN: Transaction 1038027 generated with reward 3 and value 187.33
+[2025-05-07 18:20:13] MINER: Found valid hash after 2834032 operations
+[2025-05-07 18:20:13] MINER: Thread 3 successfully mined block 3 with hash 000004215ecf5dcaa04e1f728fb28c9fe6c2bf8be339ff26e82393eb0cade647
+[2025-05-07 18:20:13] MINER: Thread 5 selected 10 transactions
+[2025-05-07 18:20:13] MINER: Found valid hash after 1712738 operations
+[2025-05-07 18:20:13] MINER: Thread 2 successfully mined block 2 with hash 00000157a961393310eeda0dcec1e3527c1d63a3d7a66f3564293e27e03452db
+[2025-05-07 18:20:14] MINER: Found valid hash after 3851782 operations
+[2025-05-07 18:20:14] MINER: Thread 4 successfully mined block 4 with hash 000009ab8c97d13196a330e8ca96a7d7e0303377883cfa1e2464c3d6c94f4fb3
+[2025-05-07 18:20:14] TXGEN: Added transaction 1038028 to pool at position 28
+[2025-05-07 18:20:14] TXGEN: Transaction 1038028 generated with reward 3 and value 280.00
+[2025-05-07 18:20:14] MINER: Found valid hash after 262818 operations
+[2025-05-07 18:20:14] MINER: Thread 5 successfully mined block 5 with hash 00000b8d06af2e274bae2c5095374db8a785503f0c190ffccbf1a5fe105c2c44
+[2025-05-07 18:20:14] MINER: Thread 3 selected 10 transactions
+[2025-05-07 18:20:14] MINER: Thread 2 selected 10 transactions
+[2025-05-07 18:20:14] TXGEN: Added transaction 1038029 to pool at position 29
+[2025-05-07 18:20:14] TXGEN: Transaction 1038029 generated with reward 3 and value 229.67
+[2025-05-07 18:20:15] MINER: Thread 4 selected 10 transactions
+[2025-05-07 18:20:15] MINER: Thread 5 selected 10 transactions
+[2025-05-07 18:20:15] TXGEN: Added transaction 1038030 to pool at position 30
+[2025-05-07 18:20:15] TXGEN: Transaction 1038030 generated with reward 3 and value 234.00
+[2025-05-07 18:20:16] TXGEN: Added transaction 1038031 to pool at position 31
+[2025-05-07 18:20:16] TXGEN: Transaction 1038031 generated with reward 3 and value 187.67
+[2025-05-07 18:20:17] TXGEN: Added transaction 1038032 to pool at position 32
+[2025-05-07 18:20:17] TXGEN: Transaction 1038032 generated with reward 3 and value 294.00
+[2025-05-07 18:20:17] MINER: Found valid hash after 2444474 operations
+[2025-05-07 18:20:17] MINER: Thread 1 successfully mined block 1 with hash 000000549166de39760ede13c417e3798107af941f17b90225e24a8ea01b37a4
+[2025-05-07 18:20:17] TXGEN: Added transaction 1038033 to pool at position 33
+[2025-05-07 18:20:17] TXGEN: Transaction 1038033 generated with reward 3 and value 29.33
+[2025-05-07 18:20:18] TXGEN: Added transaction 1038034 to pool at position 34
+[2025-05-07 18:20:18] TXGEN: Transaction 1038034 generated with reward 3 and value 153.33
+[2025-05-07 18:20:18] MINER: Found valid hash after 1234865 operations
+[2025-05-07 18:20:18] MINER: Thread 3 successfully mined block 3 with hash 0000081dddc54eb302ee183c875d9322f599ee652b92212c35ba8521d3d50b71
+[2025-05-07 18:20:18] MINER: Thread 1 selected 10 transactions
+[2025-05-07 18:20:19] MINER: Found valid hash after 1351677 operations
+[2025-05-07 18:20:19] MINER: Thread 4 successfully mined block 4 with hash 000000ffe8952ea1de92ca1f3b86f83efa2d72e2b81610cc9f53fd6122310c1e
+[2025-05-07 18:20:19] TXGEN: Added transaction 1038035 to pool at position 35
+[2025-05-07 18:20:19] TXGEN: Transaction 1038035 generated with reward 3 and value 178.00
+[2025-05-07 18:20:19] MINER: Thread 3 selected 10 transactions
+[2025-05-07 18:20:19] MINER: Found valid hash after 1435530 operations
+[2025-05-07 18:20:19] MINER: Thread 5 successfully mined block 5 with hash 000002b181931a8637dacb13ebc9a1fd807a9502360ff9a54ad6a7341935ad69
+[2025-05-07 18:20:19] TXGEN: Added transaction 1038036 to pool at position 36
+[2025-05-07 18:20:19] TXGEN: Transaction 1038036 generated with reward 3 and value 42.00
+[2025-05-07 18:20:20] MINER: Thread 4 selected 10 transactions
+[2025-05-07 18:20:20] TXGEN: Added transaction 1038037 to pool at position 37
+[2025-05-07 18:20:20] TXGEN: Transaction 1038037 generated with reward 3 and value 20.00
+[2025-05-07 18:20:20] MINER: Thread 5 selected 10 transactions
+[2025-05-07 18:20:21] TXGEN: Added transaction 1038038 to pool at position 38
+[2025-05-07 18:20:21] TXGEN: Transaction 1038038 generated with reward 3 and value 5.67
+[2025-05-07 18:20:21] TXGEN: Added transaction 1038039 to pool at position 39
+[2025-05-07 18:20:21] TXGEN: Transaction 1038039 generated with reward 3 and value 0.33
+[2025-05-07 18:20:21] MINER: Found valid hash after 2415508 operations
+[2025-05-07 18:20:21] MINER: Thread 2 successfully mined block 2 with hash 000000a7f005ad7e9ad0f99a0ca288b5b5d77ed1f38260a362e77101b063895c
+[2025-05-07 18:20:22] TXGEN: Added transaction 1038040 to pool at position 40
+[2025-05-07 18:20:22] TXGEN: Transaction 1038040 generated with reward 3 and value 13.00
+[2025-05-07 18:20:22] 
+Received SIGINT, shutting down...
+[2025-05-07 18:20:22] 
+Received SIGINT, shutting down...
+[2025-05-07 18:20:22] 
+Received SIGINT, shutting down...
+[2025-05-07 18:20:22] 
+Received SIGINT, shutting down...
+[2025-05-07 18:20:22] CONTROLLER: Beginning shutdown sequence...
+[2025-05-07 18:20:22] CONTROLLER: Beginning process termination...
+[2025-05-07 18:20:22] 
+CONTROLLER: Current Process Status:
+[2025-05-07 18:20:22] Validator Process (PID: 985): [2025-05-07 18:20:22] Running
+[2025-05-07 18:20:22] Statistics Process (PID: 987): [2025-05-07 18:20:22] Running
+[2025-05-07 18:20:22] Miner Process (PID: 984): [2025-05-07 18:20:22] Running
+[2025-05-07 18:20:22] 
+[2025-05-07 18:20:22] CONTROLLER: Sending SIGTERM to validator (PID: 985)
+[2025-05-07 18:20:22] CONTROLLER: Sending SIGTERM to statistics (PID: 987)
+[2025-05-07 18:20:22] CONTROLLER: Sending SIGTERM to miner process (PID: 984)
+[2025-05-07 18:20:22] CONTROLLER: Process 985 killed by signal 15
+[2025-05-07 18:20:22] CONTROLLER: Process 984 killed by signal 15
+[2025-05-07 18:20:22] CONTROLLER: Process 987 killed by signal 11
+[2025-05-07 18:20:22] 
+CONTROLLER: Current Process Status:
+[2025-05-07 18:20:22] Validator Process (PID: 985): [2025-05-07 18:20:22] Not running
+[2025-05-07 18:20:22] Statistics Process (PID: 987): [2025-05-07 18:20:22] Not running
+[2025-05-07 18:20:22] Miner Process (PID: 984): [2025-05-07 18:20:22] Not running
+[2025-05-07 18:20:22] 
+[2025-05-07 18:20:22] CONTROLLER: Process termination completed
+[2025-05-07 18:20:22] CONTROLLER: Transaction pool semaphore removed
+[2025-05-07 18:20:22] Detached from transaction pool shared memory
+[2025-05-07 18:20:22] Detached from blockchain ledger shared memory
+[2025-05-07 18:20:22] Removed transaction pool shared memory
+[2025-05-07 18:20:22] Removed blockchain ledger shared memory
+[2025-05-07 18:20:22] CONTROLLER: Removing message queue...
+[2025-05-07 18:20:22] CONTROLLER: Message queue removed successfully
+[2025-05-07 18:20:22] CONTROLLER: All resources cleaned up, exiting
+--- Logging session ended at 2025-05-07 18:20:22 ---
+
+[2025-05-07 18:20:23] TXGEN: Added transaction 1038041 to pool at position 41
+[2025-05-07 18:20:23] TXGEN: Transaction 1038041 generated with reward 3 and value 42.33
+[2025-05-07 18:20:24] TXGEN: Added transaction 1038042 to pool at position 42
+[2025-05-07 18:20:24] TXGEN: Transaction 1038042 generated with reward 3 and value 23.33
+[2025-05-07 18:20:24] TXGEN: Received SIGINT, shutting down...
+--- Logging session ended at 2025-05-07 18:20:24 ---
+

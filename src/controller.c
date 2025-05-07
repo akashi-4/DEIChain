@@ -185,11 +185,27 @@ void setup_shared_memory(Config config) {
     // Initialize the transaction pool
     transaction_pool->size = config.tx_pool_size;
     transaction_pool->transactions_pending = 0;
+    transaction_pool->num_transactions_per_block = config.transactions_per_block;
+    
+    // Initialize mutex and condition variable
+    pthread_mutexattr_t mutex_attr;
+    pthread_condattr_t cond_attr;
+    
+    pthread_mutexattr_init(&mutex_attr);
+    pthread_mutexattr_setpshared(&mutex_attr, PTHREAD_PROCESS_SHARED);
+    pthread_mutex_init(&transaction_pool->mutex, &mutex_attr);
+    
+    pthread_condattr_init(&cond_attr);
+    pthread_condattr_setpshared(&cond_attr, PTHREAD_PROCESS_SHARED);
+    pthread_cond_init(&transaction_pool->enough_tx, &cond_attr);
+    
+    pthread_mutexattr_destroy(&mutex_attr);
+    pthread_condattr_destroy(&cond_attr);
+
     for(int i = 0; i < config.tx_pool_size; i++){
         transaction_pool->entries[i].empty = 1;
         transaction_pool->entries[i].age = 0;
     }
-
 
     // Initialize the blockchain ledger
     blockchain_ledger->num_blocks = 0;
@@ -204,6 +220,12 @@ void cleanup_shared_memory() {
         sem_unlink(TX_POOL_SEM);
         tx_pool_sem = NULL;
         log_message("CONTROLLER: Transaction pool semaphore removed\n");
+    }
+
+    // Clean up mutex and condition variable
+    if (transaction_pool != NULL) {
+        pthread_mutex_destroy(&transaction_pool->mutex);
+        pthread_cond_destroy(&transaction_pool->enough_tx);
     }
 
     // Detach from shared memory segments
@@ -357,8 +379,17 @@ void signal_handler(int signum) {
 
 // Function to get random transactions from the pool
 Transaction* get_random_transactions(int num_transactions_needed) {
+    // Lock the mutex
+    pthread_mutex_lock(&transaction_pool->mutex);
+    
+    // Wait until we have enough transactions
+    while (transaction_pool->transactions_pending < transaction_pool->num_transactions_per_block) {
+        pthread_cond_wait(&transaction_pool->enough_tx, &transaction_pool->mutex);
+    }
+    
     // Wait for semaphore
     if (sem_wait(tx_pool_sem) == -1) {
+        pthread_mutex_unlock(&transaction_pool->mutex);
         perror("MINER: Failed to lock semaphore");
         return NULL;
     }
@@ -367,6 +398,7 @@ Transaction* get_random_transactions(int num_transactions_needed) {
     if (!selected_transactions) {
         log_message("MINER: Failed to allocate memory for transactions\n");
         sem_post(tx_pool_sem);
+        pthread_mutex_unlock(&transaction_pool->mutex);
         return NULL;
     }
 
@@ -377,6 +409,7 @@ Transaction* get_random_transactions(int num_transactions_needed) {
         free(selected_transactions);
         log_message("MINER: Failed to allocate memory for indices\n");
         sem_post(tx_pool_sem);
+        pthread_mutex_unlock(&transaction_pool->mutex);
         return NULL;
     }
 
@@ -392,6 +425,7 @@ Transaction* get_random_transactions(int num_transactions_needed) {
         free(selected_transactions);
         free(available_indices);
         sem_post(tx_pool_sem);
+        pthread_mutex_unlock(&transaction_pool->mutex);
         return NULL;
     }
 
@@ -414,9 +448,11 @@ Transaction* get_random_transactions(int num_transactions_needed) {
     if (sem_post(tx_pool_sem) == -1) {
         perror("MINER: Failed to unlock semaphore");
         free(selected_transactions);
+        pthread_mutex_unlock(&transaction_pool->mutex);
         return NULL;
     }
 
+    pthread_mutex_unlock(&transaction_pool->mutex);
     return selected_transactions;
 }
 
