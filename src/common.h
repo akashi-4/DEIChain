@@ -87,4 +87,10 @@ typedef struct {
     time_t *tx_timestamp;   // Pointer to timestamp array
 } MessageToStatistics;
 
+// Message from miner to validator
+typedef struct {
+    int miner_id;
+    Block block;
+} MessageToValidator;
+
 #endif

@@ -10,20 +10,47 @@
 #include "logger.h"
 
 int get_max_transaction_reward(const Block *block, const int txs_per_block) {
-    if (block == NULL) return 0;
+    if (block == NULL) {
+        log_message("POW: Block pointer is NULL in get_max_transaction_reward\n");
+        return 0;
+    }
 
+    if (txs_per_block <= 0) {
+        log_message("POW: Invalid txs_per_block (%d) in get_max_transaction_reward\n", txs_per_block);
+        return 0;
+    }
+
+    log_message("POW: Checking rewards for %d transactions\n", txs_per_block);
     int max_reward = 0;
+
     for (int i = 0; i < txs_per_block; ++i) {
         int reward = block->transactions[i].reward;
+        log_message("POW: Transaction %d has reward %d\n", i, reward);
+        
+        // Validate reward value
+        if (reward < 1 || reward > 3) {
+            log_message("POW: Invalid reward value %d in transaction %d\n", reward, i);
+            continue;
+        }
+
         if (reward > max_reward) {
             max_reward = reward;
         }
     }
 
+    log_message("POW: Maximum reward found: %d\n", max_reward);
     return max_reward;
 }
 
 unsigned char *serialize_block(const Block *block, size_t *sz_buf, int transactions_per_block) {
+    if (!block) {
+        log_message("POW: NULL block pointer in serialize_block\n");
+        return NULL;
+    }
+    
+    //log_message("POW: Serializing block with %d transactions, nonce: %d\n", 
+    //          transactions_per_block, block->nonce);
+    
     // Calculate the size needed for the buffer
     *sz_buf = sizeof(int) +                    // txb_id
               HASH_SIZE +                      // prev_hash
@@ -32,7 +59,10 @@ unsigned char *serialize_block(const Block *block, size_t *sz_buf, int transacti
               sizeof(int);                     // nonce
 
     unsigned char *buffer = malloc(*sz_buf);
-    if (!buffer) return NULL;
+    if (!buffer) {
+        log_message("POW: Failed to allocate serialization buffer\n");
+        return NULL;
+    }
 
     memset(buffer, 0, *sz_buf);
 
@@ -52,6 +82,10 @@ unsigned char *serialize_block(const Block *block, size_t *sz_buf, int transacti
 
     // Copy all transactions
     for (int i = 0; i < transactions_per_block; ++i) {
+        // Log transaction details before copying
+        //log_message("POW: Serializing transaction %d - ID: %d, Reward: %d\n", 
+        //          i, block->transactions[i].tx_id, block->transactions[i].reward);
+        
         memcpy(p, &block->transactions[i], sizeof(Transaction));
         p += sizeof(Transaction);
     }
@@ -114,9 +148,12 @@ int check_difficulty(const char *hash, const int reward) {
 
 /* Function to verify a nonce */
 int verify_nonce(const Block *block, int transactions_per_block) {
+    log_message("POW: Starting verification of nonce %d\n", block->nonce);
     char hash[HASH_SIZE];
     int reward = get_max_transaction_reward(block, transactions_per_block);
+    log_message("POW: Reward: %d\n", reward);
     compute_sha256(block, hash, transactions_per_block);
+    log_message("POW: Hash: %s (nonce: %d)\n", hash, block->nonce);
     return check_difficulty(hash, reward);
 }
 

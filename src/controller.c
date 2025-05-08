@@ -17,7 +17,10 @@
 #include <fcntl.h>
 #include <sys/stat.h>
 #include <sys/errno.h>
-
+#include <time.h>
+#include <openssl/conf.h>
+#include <openssl/evp.h>
+#include <openssl/crypto.h>
 #include "common.h"
 #include "logger.h"  // Include the logger header
 #include "controller.h"
@@ -26,7 +29,10 @@
 #define CONFIG_FILE "config.cfg"
 #define DEBUG 0        // Set to 1 to enable debug messages
 #define MSG_SIZE (sizeof(MessageToStatistics) - sizeof(long))
+#define VALIDATOR_PIPE_NAME "/tmp/validator_pipe"
+#define MAX_SLEEP 10
 
+#define min(a, b) ((a) < (b) ? (a) : (b))
 // Booting the system, reading the configuration file, validating the data in the
 // file, and applying the read configurations
 // Creation of processes Miner, Validator, and Statistics 
@@ -35,10 +41,12 @@
 
 // Global flag for miner thread termination
 volatile sig_atomic_t running_miner_threads = 1;
+volatile sig_atomic_t running_validator_process = 1;
 volatile sig_atomic_t print_stats_flag = 0;
 
 // Global variables to manage threads
 pthread_t *miner_threads = NULL;
+pthread_mutex_t pipe_mutex = PTHREAD_MUTEX_INITIALIZER;
 int *thread_ids = NULL;
 int num_miners_global = 0;
 int num_transactions_per_block_global = 0;
@@ -57,6 +65,44 @@ Statistics stats;
 pid_t validator_pid = -1;
 pid_t statistics_pid = -1;
 pid_t miner_process_pid = -1;
+
+pthread_mutex_t validator_message_mutex = PTHREAD_MUTEX_INITIALIZER;
+
+
+// Signal handler
+void signal_handler(int signum) {
+    if (signum == SIGINT) {
+        log_message("Received SIGINT, shutting down...\n");
+
+
+        running_miner_threads = 0;  // Signal threads to stop
+        running_validator_process = 0;  // Signal validator process to stop
+
+
+        // Wake up all waiting threads by modifying the condition they're waiting on
+        pthread_mutex_lock(&transaction_pool->mutex);
+        // Artificially set transactions_pending to trigger the wake-up condition
+        transaction_pool->transactions_pending = transaction_pool->num_transactions_per_block;
+        // Broadcast to wake up ALL waiting threads
+        pthread_cond_broadcast(&transaction_pool->enough_tx);
+        pthread_mutex_unlock(&transaction_pool->mutex);
+    } else if (signum == SIGUSR1) {
+        log_message("\nReceived SIGUSR1, printing statistics...\n");
+        print_stats_flag = 1;  // Set flag to print statistics
+    } else {
+        log_message("Received signal %d, shutting down...\n", signum);
+        running_miner_threads = 0;  // Signal threads to stop
+        running_validator_process = 0;  // Signal validator process to stop
+
+        // Wake up all waiting threads by modifying the condition they're waiting on
+        pthread_mutex_lock(&transaction_pool->mutex);
+        // Artificially set transactions_pending to trigger the wake-up condition
+        transaction_pool->transactions_pending = transaction_pool->num_transactions_per_block;
+        // Broadcast to wake up ALL waiting threads
+        pthread_cond_broadcast(&transaction_pool->enough_tx);
+        pthread_mutex_unlock(&transaction_pool->mutex); 
+    }
+}
 
 Config read_config(){
     Config config = {0};
@@ -121,7 +167,7 @@ Config read_config(){
 }
 
 // Function to set up shared memory
-void setup_shared_memory(Config config) {
+void setup(Config config) {
     // Create and initialize the semaphore first
     // Unlink any existing semaphore
     sem_unlink(TX_POOL_SEM);
@@ -210,24 +256,23 @@ void setup_shared_memory(Config config) {
     // Initialize the blockchain ledger
     blockchain_ledger->num_blocks = 0;
     strncpy(blockchain_ledger->blocks[0].prev_hash, INITIAL_HASH, HASH_SIZE);
+
+    // Create the named pipe
+    if(mkfifo(VALIDATOR_PIPE_NAME, 0666) == -1){
+        if (errno != EEXIST) {  // Only error out if it's not because the pipe already exists
+            perror("Failed to create named pipe");
+            exit(1);
+        }
+        log_message("CONTROLLER: Named pipe already exists\n");
+    } else {
+        log_message("CONTROLLER: Created named pipe\n");
+    }
 }
 
 // Function to clean up shared memory
 void cleanup_shared_memory() {
-    // Close and unlink semaphore
-    if (tx_pool_sem != NULL) {
-        sem_close(tx_pool_sem);
-        sem_unlink(TX_POOL_SEM);
-        tx_pool_sem = NULL;
-        log_message("CONTROLLER: Transaction pool semaphore removed\n");
-    }
-
-    // Clean up mutex and condition variable
-    if (transaction_pool != NULL) {
-        pthread_mutex_destroy(&transaction_pool->mutex);
-        pthread_cond_destroy(&transaction_pool->enough_tx);
-    }
-
+    log_message("CONTROLLER: Cleaning up shared memory...\n");
+    
     // Detach from shared memory segments
     if (transaction_pool != NULL && transaction_pool != (TransactionPool *)-1) {
         if (shmdt(transaction_pool) == -1) {
@@ -236,8 +281,8 @@ void cleanup_shared_memory() {
             #ifdef DEBUG
             log_message("Detached from transaction pool shared memory\n");
             #endif
-            transaction_pool = NULL;
         }
+        transaction_pool = NULL;
     }
     
     if (blockchain_ledger != NULL && blockchain_ledger != (BlockchainLedger *)-1) {
@@ -247,8 +292,8 @@ void cleanup_shared_memory() {
             #ifdef DEBUG
             log_message("Detached from blockchain ledger shared memory\n");
             #endif
-            blockchain_ledger = NULL;
         }
+        blockchain_ledger = NULL;
     }
     
     // Remove shared memory segments
@@ -275,20 +320,105 @@ void cleanup_shared_memory() {
     }
 }
 
-void cleanup_message_queue(){
-    // Remove the message queue
-    if(msqid != -1) {
-        log_message("CONTROLLER: Removing message queue...\n");
-        if(msgctl(msqid, IPC_RMID, 0) == -1){
-            perror("CONTROLLER: Failed to remove message queue");
+void cleanup_semaphores() {
+    log_message("CONTROLLER: Cleaning up semaphores...\n");
+    
+    if (tx_pool_sem != NULL && tx_pool_sem != SEM_FAILED) {
+        if (sem_close(tx_pool_sem) == -1) {
+            perror("Failed to close transaction pool semaphore");
         } else {
-            log_message("CONTROLLER: Message queue removed successfully\n");
+            log_message("Closed transaction pool semaphore\n");
+        }
+        
+        if (sem_unlink(TX_POOL_SEM) == -1) {
+            perror("Failed to unlink transaction pool semaphore");
+        } else {
+            log_message("Unlinked transaction pool semaphore\n");
+        }
+        tx_pool_sem = NULL;
+    }
+}
+
+void cleanup_named_pipes() {
+    log_message("CONTROLLER: Cleaning up named pipes...\n");
+    
+    // Close and unlink the validator pipe
+    if (unlink(VALIDATOR_PIPE_NAME) == -1) {
+        if (errno != ENOENT) { // Don't report error if pipe doesn't exist
+            perror("Failed to unlink validator pipe");
+        }
+    } else {
+        log_message("Unlinked validator pipe\n");
+    }
+}
+
+void cleanup_message_queues() {
+    log_message("CONTROLLER: Cleaning up message queues...\n");
+    
+    if (msqid != -1) {
+        if (msgctl(msqid, IPC_RMID, NULL) == -1) {
+            perror("Failed to remove message queue");
+        } else {
+            log_message("Removed message queue\n");
+            msqid = -1;
         }
     }
 }
 
+void cleanup_mutexes() {
+    log_message("CONTROLLER: Cleaning up mutexes...\n");
+    
+    // Destroy the pipe mutex
+    if (pthread_mutex_destroy(&pipe_mutex) != 0) {
+        perror("Failed to destroy pipe mutex");
+    } else {
+        log_message("Destroyed pipe mutex\n");
+    }
+    
+    // Destroy the validator message mutex
+    if (pthread_mutex_destroy(&validator_message_mutex) != 0) {
+        perror("Failed to destroy validator message mutex");
+    } else {
+        log_message("Destroyed validator message mutex\n");
+    }
+    
+    // Destroy transaction pool mutex and condition variable if they exist
+    if (transaction_pool != NULL) {
+        if (pthread_mutex_destroy(&transaction_pool->mutex) != 0) {
+            perror("Failed to destroy transaction pool mutex");
+        }
+        if (pthread_cond_destroy(&transaction_pool->enough_tx) != 0) {
+            perror("Failed to destroy transaction pool condition variable");
+        }
+    }
+}
+
+void cleanup_all_resources() {
+    log_message("CONTROLLER: Beginning cleanup of all resources...\n");
+    
+    // First terminate all processes (existing function)
+    terminate_processes();
+    
+    // Then cleanup all IPC mechanisms in order
+    cleanup_message_queues();  // Message queues first as they might be in use
+    cleanup_named_pipes();     // Named pipes next
+    cleanup_semaphores();      // Semaphores before shared memory
+    cleanup_shared_memory();   // Shared memory last as other cleanups might need it
+    cleanup_mutexes();        // Clean up synchronization primitives
+    
+    // Finally, free any remaining allocated memory
+    free_statistics();
+    
+    log_message("CONTROLLER: All resources cleaned up\n");
+}
+
 // Function to create a block with transactions
 Block* create_block(int miner_id, Transaction* selected_tx) {
+    if (!selected_tx) {
+        log_message("MINER: No transactions provided to create_block\n");
+        return NULL;
+    }
+
     // Allocate memory for the block including space for transactions
     size_t block_size = sizeof(Block) + num_transactions_per_block_global * sizeof(Transaction);
     Block* block = (Block*)malloc(block_size);
@@ -312,8 +442,13 @@ Block* create_block(int miner_id, Transaction* selected_tx) {
         strncpy(block->prev_hash, prev_hash, HASH_SIZE);
     }
 
-    // Copy transactions
-    memcpy(block->transactions, selected_tx, num_transactions_per_block_global * sizeof(Transaction));
+    // Copy transactions and validate them
+    log_message("MINER: Copying %d transactions to new block\n", num_transactions_per_block_global);
+    for (int i = 0; i < num_transactions_per_block_global; i++) {
+        block->transactions[i] = selected_tx[i];
+        log_message("MINER: Transaction %d - ID: %d, Reward: %d\n", 
+                   i, selected_tx[i].tx_id, selected_tx[i].reward);
+    }
 
     return block;
 }
@@ -324,6 +459,8 @@ void *miner_thread(void *arg) {
     log_message("MINER: Thread %d started\n", id);
     int printin = 1;
 
+    // Adjust sleep based on mining success/failure to avoid spamming the validator
+    int sleep_duration = 1;
     while (running_miner_threads) {
         pthread_mutex_lock(&transaction_pool->mutex);
         while (running_miner_threads && 
@@ -354,20 +491,23 @@ void *miner_thread(void *arg) {
             // Try to mine the block
             PoWResult result = proof_of_work(block, num_transactions_per_block_global);
             if (!result.error) {
-                log_message("MINER: Thread %d successfully mined block %d with hash %s\n", 
-                          id, block->txb_id, result.hash);
+                log_message("MINER: Thread %d successfully mined block %d with hash %s (nonce: %d)\n", 
+                          id, block->txb_id, result.hash, block->nonce);
                 // TODO: Submit block to validator
-                // MessageToStatistics* msg = prepare_message(id, 1, result.operations, 
-                //                                           block->txb_timestamp, selected_tx);
-                // send_message(msqid, msg);
-                // free_message(msg);
+                // Send via named pipe to validator process, send the block and miner id.
+                send_block(block, id);
             } else {
                 log_message("MINER: Thread %d failed to mine block %d\n", id, block->txb_id);
             }
 
             free(block);  // Free the block after we're done with it
             free(selected_tx);  // Free the selected transactions
-            sleep(1); // Small delay between mining attempts
+            if (result.error) {
+                sleep_duration = min(sleep_duration * 2, MAX_SLEEP); // Back off on failure
+            } else {
+                sleep_duration = 1; // Reset on success
+            }
+            sleep(sleep_duration);
         } else if(printin == 1){
             printin = 0;
             log_message("MINER: Thread %d - Not enough transactions in pool, waiting...\n", id);
@@ -378,23 +518,152 @@ void *miner_thread(void *arg) {
     return NULL;
 }
 
-// Signal handler
-void signal_handler(int signum) {
-    if (signum == SIGINT) {
-        log_message("\nReceived SIGINT, shutting down...\n");
-        running_miner_threads = 0;  // Signal threads to stop
-        
-        // Wake up all waiting threads by modifying the condition they're waiting on
-        pthread_mutex_lock(&transaction_pool->mutex);
-        // Artificially set transactions_pending to trigger the wake-up condition
-        transaction_pool->transactions_pending = transaction_pool->num_transactions_per_block;
-        // Broadcast to wake up ALL waiting threads
-        pthread_cond_broadcast(&transaction_pool->enough_tx);
-        pthread_mutex_unlock(&transaction_pool->mutex);
-    } else if (signum == SIGUSR1) {
-        log_message("\nReceived SIGUSR1, printing statistics...\n");
-        print_stats_flag = 1;  // Set flag to print statistics
+void send_block(Block* block, int miner_id) {
+    if (!block) {
+        log_message("MINER: Null block pointer in send_block\n");
+        return;
     }
+
+    // We need to allocate and populate a complete message, 
+    // including space for all the transactions
+    
+    // Calculate size for the complete block with all transactions
+    size_t block_with_transactions_size = sizeof(Block) + num_transactions_per_block_global * sizeof(Transaction);
+    
+    // Allocate a buffer large enough for the miner_id plus the entire block with transactions
+    size_t total_message_size = sizeof(int) + block_with_transactions_size;
+    void* message_buffer = malloc(total_message_size);
+    
+    if (!message_buffer) {
+        log_message("MINER: Failed to allocate memory for message buffer\n");
+        return;
+    }
+    
+    // Initialize buffer
+    memset(message_buffer, 0, total_message_size);
+    
+    // First part: miner_id
+    int* miner_id_ptr = (int*)message_buffer;
+    *miner_id_ptr = miner_id;
+    
+    // Second part: block with transactions
+    void* block_ptr = (void*)(miner_id_ptr + 1);
+    
+    // Copy the block header (everything up to but not including the flexible array)
+    memcpy(block_ptr, block, sizeof(Block));
+    
+    // Copy the transactions right after the block header
+    Transaction* dest_tx = (Transaction*)((char*)block_ptr + sizeof(Block));
+    
+    // Log the transactions being sent for debugging
+    log_message("MINER: Sending block with %d transactions:\n", num_transactions_per_block_global);
+    for (int i = 0; i < num_transactions_per_block_global; i++) {
+        log_message("MINER: Transaction %d before copy - ID: %d, Reward: %d\n", 
+                   i, block->transactions[i].tx_id, block->transactions[i].reward);
+        
+        memcpy(&dest_tx[i], &block->transactions[i], sizeof(Transaction));
+    }
+    
+    // Open the named pipe
+    int fd = open(VALIDATOR_PIPE_NAME, O_WRONLY);
+    if (fd == -1) {
+        perror("MINER: Failed to open named pipe");
+        free(message_buffer);
+        return;
+    }
+    
+    pthread_mutex_lock(&pipe_mutex);
+    
+    // Send the complete message
+    if (write(fd, message_buffer, total_message_size) == -1) {
+        perror("MINER: Failed to send block to validator");
+    } else {
+        log_message("MINER: Successfully sent block with %d transactions to validator\n", 
+                   num_transactions_per_block_global);
+        
+        // Log sent transactions
+        for (int i = 0; i < num_transactions_per_block_global; i++) {
+            log_message("MINER: Sent transaction %d - ID: %d, Reward: %d\n",
+                       i, block->transactions[i].tx_id, block->transactions[i].reward);
+        }
+    }
+    
+    pthread_mutex_unlock(&pipe_mutex);
+    close(fd);
+    free(message_buffer);
+}
+
+int receive_block(MessageToValidator* out_message) {
+    if (!out_message) {
+        log_message("VALIDATOR: Null out_message pointer in receive_block\n");
+        return 0;
+    }
+    
+    int success = 0;
+    
+    // Calculate the expected message size
+    size_t block_with_transactions_size = sizeof(Block) + num_transactions_per_block_global * sizeof(Transaction);
+    size_t total_message_size = sizeof(int) + block_with_transactions_size;
+    
+    // Allocate a buffer large enough for the entire message
+    void* message_buffer = malloc(total_message_size);
+    if (!message_buffer) {
+        log_message("VALIDATOR: Failed to allocate memory for message buffer\n");
+        return 0;
+    }
+    
+    // Initialize buffer
+    memset(message_buffer, 0, total_message_size);
+    
+    // Open the named pipe
+    int fd = open(VALIDATOR_PIPE_NAME, O_RDONLY);
+    if (fd == -1) {
+        perror("VALIDATOR: Failed to open named pipe");
+        free(message_buffer);
+        return 0;
+    }
+
+    // Read the complete message
+    if (read(fd, message_buffer, total_message_size) == -1) {
+        perror("VALIDATOR: Failed to receive block");
+    } else {
+        // First part: miner_id
+        int* miner_id_ptr = (int*)message_buffer;
+        out_message->miner_id = *miner_id_ptr;
+        
+        // Second part: block with transactions
+        void* block_ptr = (void*)(miner_id_ptr + 1);
+        
+        // Copy the block header
+        memcpy(&out_message->block, block_ptr, sizeof(Block));
+        
+        // Copy the transactions
+        Transaction* src_tx = (Transaction*)((char*)block_ptr + sizeof(Block));
+        for (int i = 0; i < num_transactions_per_block_global; i++) {
+            memcpy(&out_message->block.transactions[i], &src_tx[i], sizeof(Transaction));
+            
+            // Verify the transaction was copied correctly
+            if (i < 5) { // Only log first 5 to avoid spamming
+                log_message("VALIDATOR: Copied transaction %d - ID: %d, Reward: %d\n",
+                          i, out_message->block.transactions[i].tx_id, 
+                          out_message->block.transactions[i].reward);
+            }
+        }
+        
+        log_message("VALIDATOR: Successfully received block %d from miner %d with nonce %d\n", 
+                   out_message->block.txb_id, out_message->miner_id, out_message->block.nonce);
+        
+        // Compute the hash directly to confirm
+        char hash[HASH_SIZE];
+        compute_sha256(&out_message->block, hash, num_transactions_per_block_global);
+        log_message("VALIDATOR: Block hash after receive: %s\n", hash);
+        
+        success = 1;
+    }
+    
+    close(fd);
+    free(message_buffer);
+    return success;
 }
 
 // Function to get random transactions from the pool
@@ -596,17 +865,148 @@ void create_validator_process(){
     }
 }
 
-void validator_process(){
-    // whenever a block is received, it is validated and sent to the statistics process through the message queue
-    // validation is done by: 
-    // checking if the block is valid (has a valid PoW)
-    // checking if the hash of the previous block is correct
-    // check if the transactions are still in the transaction pool
+// Function to check if a transaction is still in the pool
+int is_transaction_in_pool(Transaction* tx) {
+    for (int i = 0; i < transaction_pool->size; i++) {
+        if (!transaction_pool->entries[i].empty && 
+            transaction_pool->entries[i].t.tx_id == tx->tx_id) {
+            return 1;  // Found in pool
+        }
+    }
+    return 0;  // Not found in pool
+}
 
-    while(1){
-        sleep(1);
+// Function to validate a block
+int validate_block(Block* block) {
+    if (!block) {
+        log_message("VALIDATOR: Invalid block pointer\n");
+        return 0;
     }
 
+    log_message("VALIDATOR: Starting validation of block from miner %d\n", block->txb_id);
+
+    // 1. Recheck the block's PoW
+    log_message("VALIDATOR: Starting PoW verification for block %d with nonce %d\n", 
+                block->txb_id, block->nonce);
+
+    // Log block details before verification
+    char current_hash[HASH_SIZE];
+    compute_sha256(block, current_hash, num_transactions_per_block_global);
+    log_message("VALIDATOR: Block hash before verification: %s (nonce: %d)\n", current_hash, block->nonce);
+    
+    int max_reward = get_max_transaction_reward(block, num_transactions_per_block_global);
+    log_message("VALIDATOR: Max reward in block: %d\n", max_reward);
+
+    if (!verify_nonce(block, num_transactions_per_block_global)) {
+        log_message("VALIDATOR: Invalid proof of work - verification failed for nonce %d\n", block->nonce);
+        return 0;
+    }
+    
+    log_message("VALIDATOR: Proof of work verification successful with nonce %d\n", block->nonce);
+
+    // 2. Check that it correctly references the latest accepted block
+    if (blockchain_ledger->num_blocks > 0) {
+        Block* prev_block = &blockchain_ledger->blocks[blockchain_ledger->num_blocks - 1];
+        char expected_prev_hash[HASH_SIZE];
+        compute_sha256(prev_block, expected_prev_hash, num_transactions_per_block_global);
+        
+        if (strcmp(block->prev_hash, expected_prev_hash) != 0) {
+            log_message("VALIDATOR: Block doesn't reference latest blockchain block\n");
+            return 0;
+        }
+    } else if (strcmp(block->prev_hash, INITIAL_HASH) != 0) {
+        log_message("VALIDATOR: First block doesn't have correct initial hash\n");
+        return 0;
+    }
+
+    // 3. Check that the transactions are still in the pool
+    pthread_mutex_lock(&transaction_pool->mutex);
+    for (int i = 0; i < num_transactions_per_block_global; i++) {
+        if (!is_transaction_in_pool(&block->transactions[i])) {
+            log_message("VALIDATOR: Transaction %d no longer in pool\n", 
+                       block->transactions[i].tx_id);
+            pthread_mutex_unlock(&transaction_pool->mutex);
+            return 0;
+        }
+    }
+    pthread_mutex_unlock(&transaction_pool->mutex);
+
+    log_message("VALIDATOR: Block from miner %d is valid\n", block->txb_id);
+    return 1;
+}
+
+// Helper function to calculate miner credits based on transaction rewards
+int calculate_miner_credits(Block* block) {
+    int total_credits = 0;
+    for (int i = 0; i < num_transactions_per_block_global; i++) {
+        total_credits += block->transactions[i].reward;
+    }
+    return total_credits;
+}
+
+void validator_process() {
+    // Calculate size needed for the block with transactions
+    size_t message_with_block_size = sizeof(MessageToValidator) + num_transactions_per_block_global * sizeof(Transaction);
+    
+    // Allocate memory for message and processing_message
+    MessageToValidator *message = malloc(message_with_block_size);
+    MessageToValidator *processing_message = malloc(message_with_block_size);
+    
+    if (!message || !processing_message) {
+        log_message("VALIDATOR: Failed to allocate memory for messages\n");
+        if (message) free(message);
+        if (processing_message) free(processing_message);
+        return;
+    }
+    
+    // Initialize memory
+    memset(message, 0, message_with_block_size);
+    memset(processing_message, 0, message_with_block_size);
+    
+    while(running_validator_process) {
+        pthread_mutex_lock(&validator_message_mutex);
+        // Receive the block from the miner
+        if(receive_block(message)) {
+            // Make a complete copy of the message including all transactions
+            memcpy(processing_message, message, message_with_block_size);
+            pthread_mutex_unlock(&validator_message_mutex);
+
+            log_message("VALIDATOR: Processing block %d with nonce %d\n", 
+                       processing_message->block.txb_id, processing_message->block.nonce);
+            
+            // Log all transactions in the processing message for debug
+            for (int i = 0; i < num_transactions_per_block_global; i++) {
+                log_message("VALIDATOR: Processing transaction %d - ID: %d, Reward: %d\n",
+                          i, processing_message->block.transactions[i].tx_id, 
+                          processing_message->block.transactions[i].reward);
+            }
+
+            // Validate the block
+            if (validate_block(&processing_message->block)) {
+                log_message("VALIDATOR: Block validated successfully\n");
+                // Calculate credits for the miner
+                int credits = calculate_miner_credits(&processing_message->block);
+                
+                // Remove validated transactions from pool
+                remove_validated_transactions(&processing_message->block);
+                
+                // Add block to blockchain
+                //add_block_to_blockchain(&processing_message->block);
+            } else {
+                log_message("VALIDATOR: Block validation failed\n");
+                // Send invalid block statistics
+                //send_invalid_block_statistics(&processing_message->block);
+            }
+        } else {
+            pthread_mutex_unlock(&validator_message_mutex);
+        }
+    }
+    
+    // Free allocated memory
+    free(message);
+    free(processing_message);
+    
+    log_message("VALIDATOR: Process shutting down\n");
 }
 
 void print_statistics(){
@@ -898,15 +1298,67 @@ void terminate_processes() {
     #endif
 }
 
+// Function to remove transactions from pool after block validation
+void remove_validated_transactions(Block* block) {
+    if (!block) return;
+
+    pthread_mutex_lock(&transaction_pool->mutex);
+    int removed_count = 0;
+    
+    // For each transaction in the validated block
+    for (int i = 0; i < num_transactions_per_block_global; i++) {
+        Transaction* validated_tx = &block->transactions[i];
+        
+        // Search for this transaction in the pool by tx_id
+        for (int j = 0; j < transaction_pool->size; j++) {
+            if (!transaction_pool->entries[j].empty && 
+                transaction_pool->entries[j].t.tx_id == validated_tx->tx_id) {
+                
+                // Log the transaction being removed
+                log_message("Removing transaction: ID=%d, Value=%.2f, Reward=%d\n",
+                          validated_tx->tx_id,
+                          validated_tx->value,
+                          validated_tx->reward);
+                
+                // Mark the entry as empty
+                transaction_pool->entries[j].empty = 1;
+                transaction_pool->entries[j].age = 0;
+                transaction_pool->transactions_pending--;
+                removed_count++;
+                
+                // Release a slot in the semaphore
+                if (sem_post(tx_pool_sem) == -1) {
+                    log_message("Error releasing semaphore slot: %s\n", strerror(errno));
+                }
+                
+                break; // Found and removed this transaction, move to next
+            }
+        }
+    }
+    
+    pthread_mutex_unlock(&transaction_pool->mutex);
+    
+    // Log summary
+    log_message("Removed %d/%d transactions from pool for block %d\n", 
+                removed_count, num_transactions_per_block_global, block->txb_id);
+    
+    if (removed_count < num_transactions_per_block_global) {
+        log_message("Warning: Could not find all transactions in pool for block %d. Some transactions might have been removed by another process.\n", 
+                   block->txb_id);
+    }
+}
+
 int main(int argc, char *argv[]) {
     // Initialize the logger
     logger_init("DEIChain_log.txt");
     
+    OpenSSL_add_all_algorithms();
+
     log_message("CONTROLLER: DEIChain Controller starting up\n");
     
     // Read config and set up
     Config config = read_config();
-    setup_shared_memory(config);
+    setup(config);
     create_message_queue();
     
     // Set up signal handlers
@@ -933,21 +1385,10 @@ int main(int argc, char *argv[]) {
     
     log_message("CONTROLLER: Beginning shutdown sequence...\n");
     
-    // Terminate the miner process
+    // Single call to cleanup everything
+    cleanup_all_resources();
     
-
-    // First terminate all processes
-    terminate_processes();
-    
-    // Then cleanup shared memory
-    cleanup_shared_memory();
-    
-    // Finally cleanup message queue
-    cleanup_message_queue();
-
-    log_message("CONTROLLER: All resources cleaned up, exiting\n");
-    
-    // Close the logger
+    log_message("CONTROLLER: Shutdown complete\n");
     logger_close();
     
     return 0;
