@@ -68,39 +68,100 @@ pid_t miner_process_pid = -1;
 
 pthread_mutex_t validator_message_mutex = PTHREAD_MUTEX_INITIALIZER;
 
+// Global flag to prevent multiple signal handler executions
+volatile sig_atomic_t shutdown_in_progress = 0;
+// Store main process PID for signal handling
+pid_t main_process_pid = 0;
 
 // Signal handler
 void signal_handler(int signum) {
+    // Only handle SIGINT in the main controller process
     if (signum == SIGINT) {
-        log_message("Received SIGINT, shutting down...\n");
-
-
-        running_miner_threads = 0;  // Signal threads to stop
-        running_validator_process = 0;  // Signal validator process to stop
-
-
+        // Check if we're the main controller process
+        if (getpid() != main_process_pid) {
+            // If not the main process, just exit
+            exit(0);
+        }
+        
+        // Prevent re-entry by checking the global flag
+        if (shutdown_in_progress) {
+            return;  // Silent return to prevent multiple log messages
+        }
+        
+        // Set the global flag first thing
+        shutdown_in_progress = 1;
+        
+        log_message("CONTROLLER: Received SIGINT, shutting down...\n");
+        
+        // Set global flags to signal threads to stop
+        running_miner_threads = 0;
+        
         // Wake up all waiting threads by modifying the condition they're waiting on
-        pthread_mutex_lock(&transaction_pool->mutex);
-        // Artificially set transactions_pending to trigger the wake-up condition
-        transaction_pool->transactions_pending = transaction_pool->num_transactions_per_block;
-        // Broadcast to wake up ALL waiting threads
-        pthread_cond_broadcast(&transaction_pool->enough_tx);
-        pthread_mutex_unlock(&transaction_pool->mutex);
+        if (transaction_pool) {
+            pthread_mutex_lock(&transaction_pool->mutex);
+            // Artificially set transactions_pending to trigger the wake-up condition
+            transaction_pool->transactions_pending = transaction_pool->num_transactions_per_block;
+            // Broadcast to wake up ALL waiting threads
+            pthread_cond_broadcast(&transaction_pool->enough_tx);
+            pthread_mutex_unlock(&transaction_pool->mutex);
+        }
+
+        // Wait for all miner threads to finish
+        wait_for_miner_threads();
+
+        running_validator_process = 0;
+        // Explicitly initiate process termination
+        terminate_processes();
+        
+        // Exit directly if SIGINT
+        cleanup_all_resources();
+        log_message("CONTROLLER: Emergency shutdown complete\n");
+        logger_close();
+        exit(0);  // Force exit
     } else if (signum == SIGUSR1) {
-        log_message("\nReceived SIGUSR1, printing statistics...\n");
+        // For SIGUSR1, handle only in main process
+        if (getpid() != main_process_pid) {
+            return;
+        }
+        
+        // For SIGUSR1, we still allow multiple calls
+        log_message("CONTROLLER: Received SIGUSR1, printing statistics...\n");
         print_stats_flag = 1;  // Set flag to print statistics
     } else {
-        log_message("Received signal %d, shutting down...\n", signum);
+        // For any other signal, handle like SIGINT but only in main process
+        if (getpid() != main_process_pid) {
+            exit(0);
+        }
+        
+        if (shutdown_in_progress) {
+            return;
+        }
+        
+        // Set the global flag
+        shutdown_in_progress = 1;
+        
+        log_message("CONTROLLER: Received signal %d, shutting down...\n", signum);
         running_miner_threads = 0;  // Signal threads to stop
         running_validator_process = 0;  // Signal validator process to stop
 
         // Wake up all waiting threads by modifying the condition they're waiting on
-        pthread_mutex_lock(&transaction_pool->mutex);
-        // Artificially set transactions_pending to trigger the wake-up condition
-        transaction_pool->transactions_pending = transaction_pool->num_transactions_per_block;
-        // Broadcast to wake up ALL waiting threads
-        pthread_cond_broadcast(&transaction_pool->enough_tx);
-        pthread_mutex_unlock(&transaction_pool->mutex); 
+        if (transaction_pool) {
+            pthread_mutex_lock(&transaction_pool->mutex);
+            // Artificially set transactions_pending to trigger the wake-up condition
+            transaction_pool->transactions_pending = transaction_pool->num_transactions_per_block;
+            // Broadcast to wake up ALL waiting threads
+            pthread_cond_broadcast(&transaction_pool->enough_tx);
+            pthread_mutex_unlock(&transaction_pool->mutex);
+        }
+        
+        // Explicitly initiate process termination
+        terminate_processes();
+        
+        // Exit directly for other termination signals
+        cleanup_all_resources();
+        log_message("CONTROLLER: Emergency shutdown complete\n");
+        logger_close();
+        exit(0);  // Force exit
     }
 }
 
@@ -394,6 +455,18 @@ void cleanup_mutexes() {
 }
 
 void cleanup_all_resources() {
+    // Only do cleanup in the main controller process
+    if (getpid() != main_process_pid) {
+        return;
+    }
+    
+    // Prevent multiple cleanups
+    static int cleanup_done = 0;
+    if (cleanup_done) {
+        return;
+    }
+    cleanup_done = 1;
+    
     log_message("CONTROLLER: Beginning cleanup of all resources...\n");
     
     // First terminate all processes (existing function)
@@ -404,7 +477,7 @@ void cleanup_all_resources() {
     cleanup_named_pipes();     // Named pipes next
     cleanup_semaphores();      // Semaphores before shared memory
     cleanup_shared_memory();   // Shared memory last as other cleanups might need it
-    cleanup_mutexes();        // Clean up synchronization primitives
+    cleanup_mutexes();         // Clean up synchronization primitives
     
     // Finally, free any remaining allocated memory
     free_statistics();
@@ -470,6 +543,7 @@ void *miner_thread(void *arg) {
         
         // Check if we were woken up for shutdown
         if (!running_miner_threads) {
+            log_message("MINER: Thread %d woken up for shutdown\n", id);
             pthread_mutex_unlock(&transaction_pool->mutex);
             break;
         }
@@ -481,6 +555,13 @@ void *miner_thread(void *arg) {
             printin = 1;
             log_message("MINER: Thread %d selected %d transactions\n", id, num_transactions_per_block_global);
             
+            // Check again if we should be shutting down
+            if (!running_miner_threads) {
+                log_message("MINER: Thread %d stopping after selecting transactions\n", id);
+                free(selected_tx);
+                break;
+            }
+            
             // Create a new block
             Block* block = create_block(id, selected_tx);
             if (!block) {
@@ -488,8 +569,25 @@ void *miner_thread(void *arg) {
                 continue;
             }
 
+            // Check again if we should be shutting down
+            if (!running_miner_threads) {
+                log_message("MINER: Thread %d stopping after creating block\n", id);
+                free(block);
+                free(selected_tx);
+                break;
+            }
+
             // Try to mine the block
             PoWResult result = proof_of_work(block, num_transactions_per_block_global);
+            
+            // Check again if we should be shutting down
+            if (!running_miner_threads) {
+                log_message("MINER: Thread %d stopping after mining attempt\n", id);
+                free(block);
+                free(selected_tx);
+                break;
+            }
+            
             if (!result.error) {
                 log_message("MINER: Thread %d successfully mined block %d with hash %s (nonce: %d)\n", 
                           id, block->txb_id, result.hash, block->nonce);
@@ -507,14 +605,24 @@ void *miner_thread(void *arg) {
             } else {
                 sleep_duration = 1; // Reset on success
             }
-            sleep(sleep_duration);
+            
+            // Only sleep if we're not shutting down
+            if (running_miner_threads) {
+                sleep(sleep_duration);
+            }
         } else if(printin == 1){
             printin = 0;
             log_message("MINER: Thread %d - Not enough transactions in pool, waiting...\n", id);
         }
+        
+        // Check one more time if we should be shutting down
+        if (!running_miner_threads) {
+            log_message("MINER: Thread %d detected shutdown signal\n", id);
+            break;
+        }
     }
     
-    log_message("MINER: Thread %d shutting down\n", id);
+    log_message("MINER: Thread %d shutting down cleanly\n", id);
     return NULL;
 }
 
@@ -822,16 +930,30 @@ void miner_process(int num_miners) {
 
 // Function to wait for miner threads to complete (call this at the end)
 int wait_for_miner_threads() {
-    if (miner_threads == NULL) return 0;
+    if (miner_threads == NULL) {
+        log_message("CONTROLLER: No miner threads to wait for\n");
+        return 0;
+    }
     
-    log_message("Waiting for all miner threads to finish...\n");
+    log_message("CONTROLLER: Waiting for %d miner threads to finish...\n", num_miners_global);
     
-    // Wait for all Miner threads to complete
+    // Print the status of each thread
     for (int i = 0; i < num_miners_global; i++) {
-        #if DEBUG
-        debug_message("Joining miner thread %d\n", i + 1);
-        #endif
-        pthread_join(miner_threads[i], NULL);
+        log_message("CONTROLLER: Waiting for miner thread %d to complete\n", i + 1);
+        
+        // Join each thread with a timeout to avoid hanging
+        struct timespec timeout;
+        clock_gettime(CLOCK_REALTIME, &timeout);
+        timeout.tv_sec += 3; // 3 second timeout
+        
+        int join_result = pthread_join(miner_threads[i], NULL);
+        if (join_result == 0) {
+            log_message("CONTROLLER: Miner thread %d completed successfully\n", i + 1);
+        } else if (join_result == ETIMEDOUT) {
+            log_message("CONTROLLER: Timeout waiting for miner thread %d, will proceed anyway\n", i + 1);
+        } else {
+            log_message("CONTROLLER: Error joining miner thread %d: %s\n", i + 1, strerror(join_result));
+        }
     }
     
     // Free the memory allocated
@@ -840,8 +962,7 @@ int wait_for_miner_threads() {
     miner_threads = NULL;
     thread_ids = NULL;
 
-    log_message("All miner threads have finished\n");
-    log_message("MINER: Process shutting down\n");
+    log_message("CONTROLLER: All miner threads have finished or timed out\n");
     return 1;
 }
 
@@ -852,6 +973,11 @@ void create_validator_process(){
         #if DEBUG
         debug_message("Creating validator process\n");
         #endif
+        
+        // Set up signal handlers in child process
+        signal(SIGINT, signal_handler);  // Will just exit for child processes
+        signal(SIGTERM, signal_handler); // Will just exit for child processes
+        
         // Child process
         validator_process();
         exit(0);  // Exit after validator process completes
@@ -1092,6 +1218,11 @@ void create_statistics_process(){
         #if DEBUG
         debug_message("Creating statistics process\n");
         #endif
+        
+        // Set up signal handlers in child process
+        signal(SIGINT, signal_handler);  // Will just exit for child processes
+        signal(SIGTERM, signal_handler); // Will just exit for child processes
+        
         // Initialize the statistics
         initialize_statistics();
         statistics_process();
@@ -1111,6 +1242,11 @@ void create_miner_process(int num_miners){
         #if DEBUG
         debug_message("Creating miner process\n");
         #endif
+        
+        // Set up signal handlers in child process
+        signal(SIGINT, signal_handler);  // Will just exit for child processes
+        signal(SIGTERM, signal_handler); // Will just exit for child processes
+        
         // Child process
         miner_process(num_miners);
         if(wait_for_miner_threads() == 1){
@@ -1242,35 +1378,73 @@ void print_process_status() {
 }
 
 void terminate_processes() {
+    // Prevent multiple concurrent terminations
+    static int termination_in_progress = 0;
+    
+    if (termination_in_progress) {
+        return;  // Silent return to prevent multiple terminations
+    }
+    
+    termination_in_progress = 1;  // Set the flag
+    
     log_message("CONTROLLER: Beginning process termination...\n");
+    
     #if DEBUG
     print_process_status();  // Print status before termination
     #endif
     
-    // Send SIGTERM to specific processes first
-    if (validator_pid > 0) {
+    // First send SIGTERM to all child processes
+    int termination_sent = 0;
+    
+    if (validator_pid > 0 && kill(validator_pid, 0) == 0) {
         log_message("CONTROLLER: Sending SIGTERM to validator (PID: %d)\n", validator_pid);
         kill(validator_pid, SIGTERM);
+        termination_sent = 1;
     }
-    if (statistics_pid > 0) {
+    
+    if (statistics_pid > 0 && kill(statistics_pid, 0) == 0) {
         log_message("CONTROLLER: Sending SIGTERM to statistics (PID: %d)\n", statistics_pid);
         kill(statistics_pid, SIGTERM);
+        termination_sent = 1;
     }
-    if (miner_process_pid > 0) {
-        // Wait for all miner threads to finish
+    
+    if (miner_process_pid > 0 && kill(miner_process_pid, 0) == 0) {
+        // First try to wait for all miner threads to finish
         wait_for_miner_threads();
         log_message("CONTROLLER: Sending SIGTERM to miner process (PID: %d)\n", miner_process_pid);
         kill(miner_process_pid, SIGTERM);
+        termination_sent = 1;
     }
     
-    // Wait for processes to terminate
-    pid_t wpid;
-    int status;
+    // If no processes to terminate, return early
+    if (!termination_sent) {
+        log_message("CONTROLLER: No active processes to terminate\n");
+        termination_in_progress = 0;  // Reset the flag before returning
+        return;
+    }
+    
+    // Wait for processes to terminate with timeout
     int timeout = 5;  // 5 seconds timeout
     time_t start_time = time(NULL);
+    pid_t wpid;
+    int status;
+    int remaining_processes = 0;
     
-    while ((wpid = waitpid(-1, &status, WNOHANG)) >= 0) {
-        if (wpid > 0) {
+    // Wait a bit for processes to terminate on their own
+    do {
+        remaining_processes = 0;
+        
+        if (validator_pid > 0 && kill(validator_pid, 0) == 0) 
+            remaining_processes++;
+            
+        if (statistics_pid > 0 && kill(statistics_pid, 0) == 0) 
+            remaining_processes++;
+            
+        if (miner_process_pid > 0 && kill(miner_process_pid, 0) == 0) 
+            remaining_processes++;
+        
+        // Check for any terminated children
+        while ((wpid = waitpid(-1, &status, WNOHANG)) > 0) {
             if (WIFEXITED(status)) {
                 log_message("CONTROLLER: Process %d terminated normally with status %d\n", 
                            wpid, WEXITSTATUS(status));
@@ -1278,24 +1452,50 @@ void terminate_processes() {
                 log_message("CONTROLLER: Process %d killed by signal %d\n", 
                            wpid, WTERMSIG(status));
             }
+            
+            // Update PIDs if this process terminated
+            if (wpid == validator_pid) validator_pid = -1;
+            if (wpid == statistics_pid) statistics_pid = -1;
+            if (wpid == miner_process_pid) miner_process_pid = -1;
         }
         
-        // Check timeout
-        if (time(NULL) - start_time > timeout) {
-            log_message("CONTROLLER: Timeout waiting for processes to terminate. Forcing termination.\n");
-            // Force kill any remaining processes
-            if (kill(validator_pid, 0) == 0) kill(validator_pid, SIGKILL);
-            if (kill(statistics_pid, 0) == 0) kill(statistics_pid, SIGKILL);
-            if (kill(miner_process_pid, 0) == 0) kill(miner_process_pid, SIGKILL);
+        // If no more processes or timeout reached, exit the loop
+        if (remaining_processes == 0 || time(NULL) - start_time > timeout)
             break;
+            
+        usleep(100000);  // Sleep for 100ms between checks
+    } while (1);
+    
+    // If timeout reached and processes still exist, force kill them
+    if (remaining_processes > 0) {
+        log_message("CONTROLLER: Timeout waiting for processes to terminate. Forcing termination.\n");
+        
+        if (validator_pid > 0 && kill(validator_pid, 0) == 0) {
+            log_message("CONTROLLER: Force killing validator (PID: %d)\n", validator_pid);
+            kill(validator_pid, SIGKILL);
         }
         
-        usleep(100000);  // Sleep for 100ms between checks
+        if (statistics_pid > 0 && kill(statistics_pid, 0) == 0) {
+            log_message("CONTROLLER: Force killing statistics (PID: %d)\n", statistics_pid);
+            kill(statistics_pid, SIGKILL);
+        }
+        
+        if (miner_process_pid > 0 && kill(miner_process_pid, 0) == 0) {
+            log_message("CONTROLLER: Force killing miner process (PID: %d)\n", miner_process_pid);
+            kill(miner_process_pid, SIGKILL);
+        }
+        
+        // Wait one final time for any killed processes
+        usleep(500000);  // 500ms wait
+        while (waitpid(-1, NULL, WNOHANG) > 0);
     }
+    
     #if DEBUG
     print_process_status();  // Print final status
-    log_message("CONTROLLER: Process termination completed\n");
     #endif
+    
+    log_message("CONTROLLER: Process termination completed\n");
+    termination_in_progress = 0;  // Reset the flag at the end
 }
 
 // Function to remove transactions from pool after block validation
@@ -1349,6 +1549,9 @@ void remove_validated_transactions(Block* block) {
 }
 
 int main(int argc, char *argv[]) {
+    // Store the main process PID
+    main_process_pid = getpid();
+    
     // Initialize the logger
     logger_init("DEIChain_log.txt");
     
@@ -1364,6 +1567,7 @@ int main(int argc, char *argv[]) {
     // Set up signal handlers
     signal(SIGINT, signal_handler);
     signal(SIGUSR1, signal_handler);
+    signal(SIGTERM, signal_handler);  // Also handle SIGTERM for clean shutdown
     
     log_message("CONTROLLER: Signal handlers installed. Send SIGUSR1 to print statistics (kill -SIGUSR1 %d)\n", getpid());
     
@@ -1373,11 +1577,30 @@ int main(int argc, char *argv[]) {
     create_statistics_process();
     
     // Main loop - wait for termination signal
+    int shutdown_attempts = 0;
     while (running_miner_threads) {
         // Check if we need to print statistics
         if (print_stats_flag) {
             print_statistics();  
             print_stats_flag = 0;  // Reset the flag
+        }
+        
+        // Check if child processes are still running
+        if (miner_process_pid > 0 && kill(miner_process_pid, 0) != 0) {
+            log_message("CONTROLLER: Miner process ended unexpectedly, initiating shutdown\n");
+            running_miner_threads = 0;  // Signal to exit the loop
+        }
+        
+        if (validator_pid > 0 && kill(validator_pid, 0) != 0) {
+            log_message("CONTROLLER: Validator process ended unexpectedly, initiating shutdown\n");
+            running_miner_threads = 0;  // Signal to exit the loop
+        }
+        
+        // Periodic status check for debugging
+        shutdown_attempts++;
+        if (shutdown_attempts % 10 == 0 && !running_miner_threads) {
+            log_message("CONTROLLER: Waiting for processes to terminate... (attempt %d)\n", shutdown_attempts);
+            terminate_processes();  // Try terminating processes again
         }
         
         sleep(1);
