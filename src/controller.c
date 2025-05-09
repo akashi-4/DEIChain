@@ -257,8 +257,8 @@ void setup(Config config) {
     blockchain_shmid = shmget(blockchain_key, ledger_size, IPC_CREAT | 0664);
 
     #ifdef DEBUG
-    log_message("Transaction pool shared memory ID: %d\n", tx_pool_shmid);
-    log_message("Blockchain ledger shared memory ID: %d\n", blockchain_shmid);
+    debug_message("Transaction pool shared memory ID: %d\n", tx_pool_shmid);
+    debug_message("Blockchain ledger shared memory ID: %d\n", blockchain_shmid);
     #endif
 
     if (tx_pool_shmid == -1) {
@@ -285,8 +285,8 @@ void setup(Config config) {
     }
 
     #ifdef DEBUG
-    log_message("Transaction pool attached at address: %p\n", transaction_pool);
-    log_message("Blockchain ledger attached at address: %p\n", blockchain_ledger);
+    debug_message("Transaction pool attached at address: %p\n", transaction_pool);
+    debug_message("Blockchain ledger attached at address: %p\n", blockchain_ledger);
     #endif
 
     // Initialize the transaction pool
@@ -1005,30 +1005,45 @@ int is_transaction_in_pool(Transaction* tx) {
 // Function to validate a block
 int validate_block(Block* block) {
     if (!block) {
-        log_message("VALIDATOR: Invalid block pointer\n");
+        #if DEBUG
+        debug_message("VALIDATOR: Invalid block pointer\n");
+        #endif
         return 0;
     }
 
-    log_message("VALIDATOR: Starting validation of block from miner %d\n", block->txb_id);
+    #if DEBUG
+    debug_message("VALIDATOR: Starting validation of block from miner %d\n", block->txb_id);
+    #endif
 
     // 1. Recheck the block's PoW
-    log_message("VALIDATOR: Starting PoW verification for block %d with nonce %d\n", 
+    #if DEBUG
+    debug_message("VALIDATOR: Starting PoW verification for block %d with nonce %d\n", 
                 block->txb_id, block->nonce);
+    #endif
 
     // Log block details before verification
     char current_hash[HASH_SIZE];
     compute_sha256(block, current_hash, num_transactions_per_block_global);
-    log_message("VALIDATOR: Block hash before verification: %s (nonce: %d)\n", current_hash, block->nonce);
+    #if DEBUG
+    debug_message("VALIDATOR: Block hash before verification: %s (nonce: %d)\n", current_hash, block->nonce);
+    #endif
     
+    
+    #if DEBUG
     int max_reward = get_max_transaction_reward(block, num_transactions_per_block_global);
-    log_message("VALIDATOR: Max reward in block: %d\n", max_reward);
+    debug_message("VALIDATOR: Max reward in block: %d\n", max_reward);
+    #endif
 
     if (!verify_nonce(block, num_transactions_per_block_global)) {
-        log_message("VALIDATOR: Invalid proof of work - verification failed for nonce %d\n", block->nonce);
+        #if DEBUG
+        debug_message("VALIDATOR: Invalid proof of work - verification failed for nonce %d\n", block->nonce);
+        #endif
         return 0;
     }
     
-    log_message("VALIDATOR: Proof of work verification successful with nonce %d\n", block->nonce);
+    #if DEBUG
+    debug_message("VALIDATOR: Proof of work verification successful with nonce %d\n", block->nonce);
+    #endif
 
     // 2. Check that it correctly references the latest accepted block
     if (blockchain_ledger->num_blocks > 0) {
@@ -1097,14 +1112,18 @@ void validator_process() {
             memcpy(processing_message, message, message_with_block_size);
             pthread_mutex_unlock(&validator_message_mutex);
 
-            log_message("VALIDATOR: Processing block %d with nonce %d\n", 
+            #if DEBUG
+            debug_message("VALIDATOR: Processing block %d with nonce %d\n", 
                        processing_message->block.txb_id, processing_message->block.nonce);
+            #endif
             
             // Log all transactions in the processing message for debug
             for (int i = 0; i < num_transactions_per_block_global; i++) {
-                log_message("VALIDATOR: Processing transaction %d - ID: %d, Reward: %d\n",
+                #if DEBUG
+                debug_message("VALIDATOR: Processing transaction %d - ID: %d, Reward: %d\n",
                           i, processing_message->block.transactions[i].tx_id, 
                           processing_message->block.transactions[i].reward);
+                #endif
             }
 
             // Validate the block
@@ -1118,8 +1137,10 @@ void validator_process() {
                 
                 // Add block to blockchain
                 //add_block_to_blockchain(&processing_message->block);
-            } else {
-                log_message("VALIDATOR: Block validation failed\n");
+            } else {    
+                #if DEBUG
+                debug_message("VALIDATOR: Block validation failed\n");
+                #endif
                 // Send invalid block statistics
                 //send_invalid_block_statistics(&processing_message->block);
             }
@@ -1131,8 +1152,9 @@ void validator_process() {
     // Free allocated memory
     free(message);
     free(processing_message);
-    
-    log_message("VALIDATOR: Process shutting down\n");
+    #if DEBUG
+    debug_message("VALIDATOR: Process shutting down\n");
+    #endif
 }
 
 void print_statistics(){
@@ -1353,28 +1375,28 @@ void free_message(MessageToStatistics *message) {
 }
 
 void print_process_status() {
-    log_message("\nCONTROLLER: Current Process Status:\n");
-    log_message("Validator Process (PID: %d): ", validator_pid);
+    debug_message("\nCONTROLLER: Current Process Status:\n");
+    debug_message("Validator Process (PID: %d): ", validator_pid);
     if (kill(validator_pid, 0) == 0) {
-        log_message("Running\n");
+        debug_message("Running\n");
     } else {
-        log_message("Not running\n");
+        debug_message("Not running\n");
     }
     
-    log_message("Statistics Process (PID: %d): ", statistics_pid);
+    debug_message("Statistics Process (PID: %d): ", statistics_pid);
     if (kill(statistics_pid, 0) == 0) {
-        log_message("Running\n");
+        debug_message("Running\n");
     } else {
-        log_message("Not running\n");
+        debug_message("Not running\n");
     }
     
     log_message("Miner Process (PID: %d): ", miner_process_pid);
     if (kill(miner_process_pid, 0) == 0) {
-        log_message("Running\n");
+        debug_message("Running\n");
     } else {
-        log_message("Not running\n");
+        debug_message("Not running\n");
     }
-    log_message("\n");
+    debug_message("\n");
 }
 
 void terminate_processes() {
@@ -1397,13 +1419,17 @@ void terminate_processes() {
     int termination_sent = 0;
     
     if (validator_pid > 0 && kill(validator_pid, 0) == 0) {
-        log_message("CONTROLLER: Sending SIGTERM to validator (PID: %d)\n", validator_pid);
+        #if DEBUG
+        debug_message("CONTROLLER: Sending SIGTERM to validator (PID: %d)\n", validator_pid);
+        #endif
         kill(validator_pid, SIGTERM);
         termination_sent = 1;
     }
     
     if (statistics_pid > 0 && kill(statistics_pid, 0) == 0) {
-        log_message("CONTROLLER: Sending SIGTERM to statistics (PID: %d)\n", statistics_pid);
+        #if DEBUG
+        debug_message("CONTROLLER: Sending SIGTERM to statistics (PID: %d)\n", statistics_pid);
+        #endif
         kill(statistics_pid, SIGTERM);
         termination_sent = 1;
     }
@@ -1411,14 +1437,18 @@ void terminate_processes() {
     if (miner_process_pid > 0 && kill(miner_process_pid, 0) == 0) {
         // First try to wait for all miner threads to finish
         wait_for_miner_threads();
-        log_message("CONTROLLER: Sending SIGTERM to miner process (PID: %d)\n", miner_process_pid);
+        #if DEBUG
+        debug_message("CONTROLLER: Sending SIGTERM to miner process (PID: %d)\n", miner_process_pid);
+        #endif
         kill(miner_process_pid, SIGTERM);
         termination_sent = 1;
     }
     
     // If no processes to terminate, return early
     if (!termination_sent) {
-        log_message("CONTROLLER: No active processes to terminate\n");
+        #if DEBUG
+        debug_message("CONTROLLER: No active processes to terminate\n");
+        #endif
         termination_in_progress = 0;  // Reset the flag before returning
         return;
     }
@@ -1446,11 +1476,15 @@ void terminate_processes() {
         // Check for any terminated children
         while ((wpid = waitpid(-1, &status, WNOHANG)) > 0) {
             if (WIFEXITED(status)) {
-                log_message("CONTROLLER: Process %d terminated normally with status %d\n", 
+                #if DEBUG
+                debug_message("CONTROLLER: Process %d terminated normally with status %d\n", 
                            wpid, WEXITSTATUS(status));
+                #endif
             } else if (WIFSIGNALED(status)) {
-                log_message("CONTROLLER: Process %d killed by signal %d\n", 
+                #if DEBUG
+                debug_message("CONTROLLER: Process %d killed by signal %d\n", 
                            wpid, WTERMSIG(status));
+                #endif
             }
             
             // Update PIDs if this process terminated
@@ -1468,20 +1502,28 @@ void terminate_processes() {
     
     // If timeout reached and processes still exist, force kill them
     if (remaining_processes > 0) {
+        #if DEBUG
         log_message("CONTROLLER: Timeout waiting for processes to terminate. Forcing termination.\n");
+        #endif
         
         if (validator_pid > 0 && kill(validator_pid, 0) == 0) {
-            log_message("CONTROLLER: Force killing validator (PID: %d)\n", validator_pid);
+            #if DEBUG
+            debug_message("CONTROLLER: Force killing validator (PID: %d)\n", validator_pid);
+            #endif
             kill(validator_pid, SIGKILL);
         }
         
         if (statistics_pid > 0 && kill(statistics_pid, 0) == 0) {
-            log_message("CONTROLLER: Force killing statistics (PID: %d)\n", statistics_pid);
+            #if DEBUG
+            debug_message("CONTROLLER: Force killing statistics (PID: %d)\n", statistics_pid);
+            #endif
             kill(statistics_pid, SIGKILL);
         }
         
         if (miner_process_pid > 0 && kill(miner_process_pid, 0) == 0) {
-            log_message("CONTROLLER: Force killing miner process (PID: %d)\n", miner_process_pid);
+            #if DEBUG
+            debug_message("CONTROLLER: Force killing miner process (PID: %d)\n", miner_process_pid);
+            #endif
             kill(miner_process_pid, SIGKILL);
         }
         
@@ -1515,10 +1557,12 @@ void remove_validated_transactions(Block* block) {
                 transaction_pool->entries[j].t.tx_id == validated_tx->tx_id) {
                 
                 // Log the transaction being removed
-                log_message("Removing transaction: ID=%d, Value=%.2f, Reward=%d\n",
+                #if DEBUG
+                debug_message("Removing transaction: ID=%d, Value=%.2f, Reward=%d\n",
                           validated_tx->tx_id,
                           validated_tx->value,
                           validated_tx->reward);
+                #endif
                 
                 // Mark the entry as empty
                 transaction_pool->entries[j].empty = 1;
@@ -1539,12 +1583,16 @@ void remove_validated_transactions(Block* block) {
     pthread_mutex_unlock(&transaction_pool->mutex);
     
     // Log summary
-    log_message("Removed %d/%d transactions from pool for block %d\n", 
+    #if DEBUG
+    debug_message("Removed %d/%d transactions from pool for block %d\n", 
                 removed_count, num_transactions_per_block_global, block->txb_id);
+    #endif
     
     if (removed_count < num_transactions_per_block_global) {
-        log_message("Warning: Could not find all transactions in pool for block %d. Some transactions might have been removed by another process.\n", 
+        #if DEBUG
+        debug_message("Warning: Could not find all transactions in pool for block %d. Some transactions might have been removed by another process.\n", 
                    block->txb_id);
+        #endif
     }
 }
 

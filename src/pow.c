@@ -11,25 +11,35 @@
 
 int get_max_transaction_reward(const Block *block, const int txs_per_block) {
     if (block == NULL) {
-        log_message("POW: Block pointer is NULL in get_max_transaction_reward\n");
+        #if DEBUG
+        debug_message("POW: Block pointer is NULL in get_max_transaction_reward\n");
+        #endif
         return 0;
     }
 
     if (txs_per_block <= 0) {
-        log_message("POW: Invalid txs_per_block (%d) in get_max_transaction_reward\n", txs_per_block);
+        #if DEBUG
+        debug_message("POW: Invalid txs_per_block (%d) in get_max_transaction_reward\n", txs_per_block);
+        #endif
         return 0;
     }
 
-    log_message("POW: Checking rewards for %d transactions\n", txs_per_block);
+    #if DEBUG
+    debug_message("POW: Checking rewards for %d transactions\n", txs_per_block);
+    #endif
     int max_reward = 0;
 
     for (int i = 0; i < txs_per_block; ++i) {
         int reward = block->transactions[i].reward;
-        log_message("POW: Transaction %d has reward %d\n", i, reward);
+        #if DEBUG
+        debug_message("POW: Transaction %d has reward %d\n", i, reward);
+        #endif
         
         // Validate reward value
         if (reward < 1 || reward > 3) {
-            log_message("POW: Invalid reward value %d in transaction %d\n", reward, i);
+            #if DEBUG
+            debug_message("POW: Invalid reward value %d in transaction %d\n", reward, i);
+            #endif
             continue;
         }
 
@@ -38,7 +48,9 @@ int get_max_transaction_reward(const Block *block, const int txs_per_block) {
         }
     }
 
-    log_message("POW: Maximum reward found: %d\n", max_reward);
+    #if DEBUG
+    debug_message("POW: Maximum reward found: %d\n", max_reward);
+    #endif
     return max_reward;
 }
 
@@ -82,10 +94,6 @@ unsigned char *serialize_block(const Block *block, size_t *sz_buf, int transacti
 
     // Copy all transactions
     for (int i = 0; i < transactions_per_block; ++i) {
-        // Log transaction details before copying
-        //log_message("POW: Serializing transaction %d - ID: %d, Reward: %d\n", 
-        //          i, block->transactions[i].tx_id, block->transactions[i].reward);
-        
         memcpy(p, &block->transactions[i], sizeof(Transaction));
         p += sizeof(Transaction);
     }
@@ -101,8 +109,8 @@ void compute_sha256(const Block *block, char *output, int transactions_per_block
     unsigned char hash[SHA256_DIGEST_LENGTH];
     size_t buffer_sz;
 
-  // since the Block has a pointer we must serialize the block to a buffer
-  unsigned char *buffer = serialize_block(block, &buffer_sz, transactions_per_block);
+    // since the Block has a pointer we must serialize the block to a buffer
+    unsigned char *buffer = serialize_block(block, &buffer_sz, transactions_per_block);
 
     SHA256(buffer, buffer_sz, hash);
     for (int i = 0; i < SHA256_DIGEST_LENGTH; i++) {
@@ -139,7 +147,9 @@ int check_difficulty(const char *hash, const int reward) {
             if ((zeros == 5 && next_char <= 'b') || zeros > 5) return 1;
             break;
         default:
-            log_message("MINER: Invalid Difficulty\n");
+            #if DEBUG
+            debug_message("MINER: Invalid Difficulty\n");
+            #endif
             return 0;
     }
 
@@ -148,12 +158,18 @@ int check_difficulty(const char *hash, const int reward) {
 
 /* Function to verify a nonce */
 int verify_nonce(const Block *block, int transactions_per_block) {
+    #if DEBUG
     log_message("POW: Starting verification of nonce %d\n", block->nonce);
+    #endif  
     char hash[HASH_SIZE];
     int reward = get_max_transaction_reward(block, transactions_per_block);
+    #if DEBUG
     log_message("POW: Reward: %d\n", reward);
+    #endif
     compute_sha256(block, hash, transactions_per_block);
+    #if DEBUG
     log_message("POW: Hash: %s (nonce: %d)\n", hash, block->nonce);
+    #endif
     return check_difficulty(hash, reward);
 }
 
