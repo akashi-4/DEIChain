@@ -31,6 +31,7 @@
 #define MSG_SIZE (sizeof(MessageToStatistics) - sizeof(long))
 #define VALIDATOR_PIPE_NAME "/tmp/validator_pipe"
 #define MAX_SLEEP 10
+#define BLOCKCHAIN_LEDGER_SEM "/blockchain_ledger_sem"
 
 #define min(a, b) ((a) < (b) ? (a) : (b))
 // Booting the system, reading the configuration file, validating the data in the
@@ -39,12 +40,11 @@
 // Setting up two shared memory segments (for Transaction Pool and Blockchain Ledger)
 // Begin implementation for SIGINT signal capture (preliminary)
 
-// Global flag for miner thread termination
 volatile sig_atomic_t running_miner_threads = 1;
 volatile sig_atomic_t running_validator_process = 1;
 volatile sig_atomic_t print_stats_flag = 0;
 
-// Global variables to manage threads
+
 pthread_t *miner_threads = NULL;
 pthread_mutex_t pipe_mutex = PTHREAD_MUTEX_INITIALIZER;
 int *thread_ids = NULL;
@@ -52,28 +52,25 @@ int num_miners_global = 0;
 int num_transactions_per_block_global = 0;
 int msqid = -1;
 
-// Global variables for shared memory
 int tx_pool_shmid = -1;
 int blockchain_shmid = -1;
 TransactionPool *transaction_pool = NULL;
 BlockchainLedger *blockchain_ledger = NULL;
 sem_t *tx_pool_sem = NULL;
-
+sem_t *blockchain_ledger_sem = NULL;
 Statistics stats;
 
-// Add these global variables at the top with other globals
 pid_t validator_pid = -1;
 pid_t statistics_pid = -1;
 pid_t miner_process_pid = -1;
 
 pthread_mutex_t validator_message_mutex = PTHREAD_MUTEX_INITIALIZER;
 
-// Global flag to prevent multiple signal handler executions
 volatile sig_atomic_t shutdown_in_progress = 0;
-// Store main process PID for signal handling
 pid_t main_process_pid = 0;
 
-// Signal handler
+int max_blocks_global = 0;
+
 void signal_handler(int signum) {
     // Only handle SIGINT in the main controller process
     if (signum == SIGINT) {
@@ -91,12 +88,13 @@ void signal_handler(int signum) {
         // Set the global flag first thing
         shutdown_in_progress = 1;
         
-        log_message("CONTROLLER: Received SIGINT, shutting down...\n");
+        log_message("CONTROLLER: Received SIGINT, initiating graceful shutdown...\n");
         
-        // Set global flags to signal threads to stop
+        // Signal threads to stop after current work
         running_miner_threads = 0;
-        
-        // Wake up all waiting threads by modifying the condition they're waiting on
+        running_validator_process = 0;
+
+        // Wake up all waiting threads to check the running flag
         if (transaction_pool) {
             pthread_mutex_lock(&transaction_pool->mutex);
             // Artificially set transactions_pending to trigger the wake-up condition
@@ -106,25 +104,32 @@ void signal_handler(int signum) {
             pthread_mutex_unlock(&transaction_pool->mutex);
         }
 
-        // Wait for all miner threads to finish
-        wait_for_miner_threads();
+        // Wait for miner threads to finish their current work
+        if (miner_threads != NULL) {
+            log_message("CONTROLLER: Waiting for miner threads to finish current work...\n");
+            for (int i = 0; i < num_miners_global; i++) {
+                if (pthread_join(miner_threads[i], NULL) == 0) {
+                    log_message("CONTROLLER: Miner thread %d finished successfully\n", i + 1);
+                }
+            }
+        }
 
-        running_validator_process = 0;
-        // Explicitly initiate process termination
+        // Now terminate processes
         terminate_processes();
         
-        // Exit directly if SIGINT
+        // Dump the ledger before shutting down
+        dump_ledger();
+        
+        // Cleanup and exit
         cleanup_all_resources();
-        log_message("CONTROLLER: Emergency shutdown complete\n");
         logger_close();
-        exit(0);  // Force exit
+        exit(0);
     } else if (signum == SIGUSR1) {
         // For SIGUSR1, handle only in main process
         if (getpid() != main_process_pid) {
             return;
         }
         
-        // For SIGUSR1, we still allow multiple calls
         log_message("CONTROLLER: Received SIGUSR1, printing statistics...\n");
         print_stats_flag = 1;  // Set flag to print statistics
     } else {
@@ -137,31 +142,39 @@ void signal_handler(int signum) {
             return;
         }
         
-        // Set the global flag
         shutdown_in_progress = 1;
         
-        log_message("CONTROLLER: Received signal %d, shutting down...\n", signum);
-        running_miner_threads = 0;  // Signal threads to stop
-        running_validator_process = 0;  // Signal validator process to stop
+        log_message("CONTROLLER: Received signal %d, initiating graceful shutdown...\n", signum);
+        running_miner_threads = 0;
+        running_validator_process = 0;
 
-        // Wake up all waiting threads by modifying the condition they're waiting on
+        // Wake up all waiting threads to check the running flag
         if (transaction_pool) {
             pthread_mutex_lock(&transaction_pool->mutex);
-            // Artificially set transactions_pending to trigger the wake-up condition
-            transaction_pool->transactions_pending = transaction_pool->num_transactions_per_block;
-            // Broadcast to wake up ALL waiting threads
             pthread_cond_broadcast(&transaction_pool->enough_tx);
             pthread_mutex_unlock(&transaction_pool->mutex);
         }
-        
-        // Explicitly initiate process termination
+
+        // Wait for miner threads to finish their current work
+        if (miner_threads != NULL) {
+            log_message("CONTROLLER: Waiting for miner threads to finish current work...\n");
+            for (int i = 0; i < num_miners_global; i++) {
+                if (pthread_join(miner_threads[i], NULL) == 0) {
+                    log_message("CONTROLLER: Miner thread %d finished successfully\n", i + 1);
+                }
+            }
+        }
+
+        // Now terminate processes
         terminate_processes();
         
-        // Exit directly for other termination signals
+        // Dump the ledger before shutting down
+        dump_ledger();
+        
+        // Cleanup and exit
         cleanup_all_resources();
-        log_message("CONTROLLER: Emergency shutdown complete\n");
         logger_close();
-        exit(0);  // Force exit
+        exit(0);
     }
 }
 
@@ -205,8 +218,8 @@ Config read_config(){
 
     // Validate the config
     if(config.num_miners <= 0 || config.tx_pool_size <= 0 || config.blockchain_blocks <= 0 || config.transactions_per_block <= 0){
-        #ifdef DEBUG
-        log_message("Invalid configuration values\n");
+        #if DEBUG
+        debug_message("Invalid configuration values\n");
         #endif
         exit(1);
     }
@@ -216,19 +229,21 @@ Config read_config(){
     num_transactions_per_block_global = config.transactions_per_block;
 
 
-    #ifdef DEBUG
-    log_message("Configuration read successfully\n");
-    log_message("NUM_MINERS = %d\n", config.num_miners);
-    log_message("TX_POOL_SIZE = %d\n", config.tx_pool_size);
-    log_message("TRANSACTIONS_PER_BLOCK = %d\n", config.transactions_per_block);
-    log_message("BLOCKCHAIN_BLOCKS = %d\n", config.blockchain_blocks);
+    #if DEBUG
+    debug_message("Configuration read successfully\n");
+    debug_message("NUM_MINERS = %d\n", config.num_miners);
+    debug_message("TX_POOL_SIZE = %d\n", config.tx_pool_size);
+    debug_message("TRANSACTIONS_PER_BLOCK = %d\n", config.transactions_per_block);
+    debug_message("BLOCKCHAIN_BLOCKS = %d\n", config.blockchain_blocks);
     #endif
 
     return config;
 }
 
-// Function to set up shared memory
 void setup(Config config) {
+    // Store max blocks globally
+    max_blocks_global = config.blockchain_blocks;
+    
     // Create and initialize the semaphore first
     // Unlink any existing semaphore
     sem_unlink(TX_POOL_SEM);
@@ -237,11 +252,32 @@ void setup(Config config) {
         perror("CONTROLLER: Failed to create semaphore");
         exit(1);
     }
-    log_message("CONTROLLER: Transaction pool semaphore created with count %d\n", config.tx_pool_size);
+
+    // Create and initialize the blockchain ledger semaphore
+    sem_unlink(BLOCKCHAIN_LEDGER_SEM);
+    blockchain_ledger_sem = sem_open(BLOCKCHAIN_LEDGER_SEM, O_CREAT, 0644, 1);
+    if (blockchain_ledger_sem == SEM_FAILED) {
+        perror("CONTROLLER: Failed to create blockchain ledger semaphore");
+        exit(1);
+    }
+
+    #if DEBUG
+    debug_message("CONTROLLER: Transaction pool semaphore created with count %d\n", config.tx_pool_size);
+    debug_message("CONTROLLER: Blockchain ledger semaphore created with count %d\n", 1);
+    #endif
 
     // Size of pool and ledger
     size_t pool_size = sizeof(TransactionPool) + config.tx_pool_size * sizeof(TransactionEntry);
-    size_t ledger_size = sizeof(BlockchainLedger);
+    
+    // Calculate total size needed for blockchain ledger
+    // Each block needs space for its transactions array
+    size_t block_size = sizeof(Block) + config.transactions_per_block * sizeof(Transaction);
+    size_t ledger_size = sizeof(BlockchainLedger) + config.blockchain_blocks * block_size;
+
+    #if DEBUG
+    debug_message("CONTROLLER: Allocating blockchain ledger with size %zu bytes\n", ledger_size);
+    debug_message("CONTROLLER: Each block requires %zu bytes\n", block_size);
+    #endif
 
     // Generate keys for shared memory segments
     key_t tx_pool_key = ftok(TX_POOL_KEY_PATH, TX_POOL_KEY_ID);
@@ -256,7 +292,7 @@ void setup(Config config) {
     tx_pool_shmid = shmget(tx_pool_key, pool_size, IPC_CREAT | 0664);
     blockchain_shmid = shmget(blockchain_key, ledger_size, IPC_CREAT | 0664);
 
-    #ifdef DEBUG
+    #if DEBUG
     debug_message("Transaction pool shared memory ID: %d\n", tx_pool_shmid);
     debug_message("Blockchain ledger shared memory ID: %d\n", blockchain_shmid);
     #endif
@@ -284,7 +320,7 @@ void setup(Config config) {
         exit(1);
     }
 
-    #ifdef DEBUG
+    #if DEBUG
     debug_message("Transaction pool attached at address: %p\n", transaction_pool);
     debug_message("Blockchain ledger attached at address: %p\n", blockchain_ledger);
     #endif
@@ -309,14 +345,30 @@ void setup(Config config) {
     pthread_mutexattr_destroy(&mutex_attr);
     pthread_condattr_destroy(&cond_attr);
 
-    for(int i = 0; i < config.tx_pool_size; i++){
+    // Initialize all transaction pool entries
+    for(int i = 0; i < config.tx_pool_size; i++) {
         transaction_pool->entries[i].empty = 1;
         transaction_pool->entries[i].age = 0;
+        memset(&transaction_pool->entries[i].t, 0, sizeof(Transaction));
     }
 
     // Initialize the blockchain ledger
+    sem_wait(blockchain_ledger_sem);
     blockchain_ledger->num_blocks = 0;
+    
+    // Initialize all blocks in the ledger to zero
+    for (int i = 0; i < config.blockchain_blocks; i++) {
+        Block* block = &blockchain_ledger->blocks[i];
+        memset(block, 0, block_size);
+        // Initialize transactions array for each block
+        for (int j = 0; j < config.transactions_per_block; j++) {
+            memset(&block->transactions[j], 0, sizeof(Transaction));
+        }
+    }
+    
+    // Set initial hash for first block
     strncpy(blockchain_ledger->blocks[0].prev_hash, INITIAL_HASH, HASH_SIZE);
+    sem_post(blockchain_ledger_sem);
 
     // Create the named pipe
     if(mkfifo(VALIDATOR_PIPE_NAME, 0666) == -1){
@@ -328,19 +380,23 @@ void setup(Config config) {
     } else {
         log_message("CONTROLLER: Created named pipe\n");
     }
+
+    // Initialize the ledger log file
+    initialize_ledger_log();
 }
 
-// Function to clean up shared memory
 void cleanup_shared_memory() {
-    log_message("CONTROLLER: Cleaning up shared memory...\n");
+    #if DEBUG
+    debug_message("CONTROLLER: Cleaning up shared memory...\n");
+    #endif
     
     // Detach from shared memory segments
     if (transaction_pool != NULL && transaction_pool != (TransactionPool *)-1) {
         if (shmdt(transaction_pool) == -1) {
             perror("Failed to detach transaction pool shared memory");
         } else {
-            #ifdef DEBUG
-            log_message("Detached from transaction pool shared memory\n");
+            #if DEBUG
+            debug_message("Detached from transaction pool shared memory\n");
             #endif
         }
         transaction_pool = NULL;
@@ -350,8 +406,8 @@ void cleanup_shared_memory() {
         if (shmdt(blockchain_ledger) == -1) {
             perror("Failed to detach blockchain ledger shared memory");
         } else {
-            #ifdef DEBUG
-            log_message("Detached from blockchain ledger shared memory\n");
+            #if DEBUG
+            debug_message("Detached from blockchain ledger shared memory\n");
             #endif
         }
         blockchain_ledger = NULL;
@@ -362,8 +418,8 @@ void cleanup_shared_memory() {
         if (shmctl(tx_pool_shmid, IPC_RMID, NULL) == -1) {
             perror("Failed to remove transaction pool shared memory");
         } else {
-            #ifdef DEBUG
-            log_message("Removed transaction pool shared memory\n");
+            #if DEBUG
+            debug_message("Removed transaction pool shared memory\n");
             #endif
             tx_pool_shmid = -1;
         }
@@ -373,8 +429,8 @@ void cleanup_shared_memory() {
         if (shmctl(blockchain_shmid, IPC_RMID, NULL) == -1) {
             perror("Failed to remove blockchain ledger shared memory");
         } else {
-            #ifdef DEBUG
-            log_message("Removed blockchain ledger shared memory\n");
+            #if DEBUG
+            debug_message("Removed blockchain ledger shared memory\n");
             #endif
             blockchain_shmid = -1;
         }
@@ -382,26 +438,52 @@ void cleanup_shared_memory() {
 }
 
 void cleanup_semaphores() {
-    log_message("CONTROLLER: Cleaning up semaphores...\n");
+    #if DEBUG
+    debug_message("CONTROLLER: Cleaning up semaphores...\n");
+    #endif
     
     if (tx_pool_sem != NULL && tx_pool_sem != SEM_FAILED) {
         if (sem_close(tx_pool_sem) == -1) {
             perror("Failed to close transaction pool semaphore");
         } else {
-            log_message("Closed transaction pool semaphore\n");
+            #if DEBUG
+            debug_message("Closed transaction pool semaphore\n");
+            #endif
         }
         
         if (sem_unlink(TX_POOL_SEM) == -1) {
             perror("Failed to unlink transaction pool semaphore");
         } else {
-            log_message("Unlinked transaction pool semaphore\n");
+            #if DEBUG
+            debug_message("Unlinked transaction pool semaphore\n");
+            #endif
         }
         tx_pool_sem = NULL;
+    }
+    if (blockchain_ledger_sem != NULL && blockchain_ledger_sem != SEM_FAILED) {
+        if (sem_close(blockchain_ledger_sem) == -1) {
+            perror("Failed to close blockchain ledger semaphore");
+        } else {
+            #if DEBUG
+            debug_message("Closed blockchain ledger semaphore\n");
+            #endif
+        }
+        
+        if (sem_unlink(BLOCKCHAIN_LEDGER_SEM) == -1) {
+            perror("Failed to unlink blockchain ledger semaphore");
+        } else {
+            #if DEBUG
+            debug_message("Unlinked blockchain ledger semaphore\n");
+            #endif
+        }
+        blockchain_ledger_sem = NULL;
     }
 }
 
 void cleanup_named_pipes() {
-    log_message("CONTROLLER: Cleaning up named pipes...\n");
+    #if DEBUG
+    debug_message("CONTROLLER: Cleaning up named pipes...\n");
+    #endif
     
     // Close and unlink the validator pipe
     if (unlink(VALIDATOR_PIPE_NAME) == -1) {
@@ -409,38 +491,50 @@ void cleanup_named_pipes() {
             perror("Failed to unlink validator pipe");
         }
     } else {
-        log_message("Unlinked validator pipe\n");
+        #if DEBUG
+        debug_message("Unlinked validator pipe\n");
+        #endif
     }
 }
 
 void cleanup_message_queues() {
-    log_message("CONTROLLER: Cleaning up message queues...\n");
+    #if DEBUG
+    debug_message("CONTROLLER: Cleaning up message queues...\n");
+    #endif
     
     if (msqid != -1) {
         if (msgctl(msqid, IPC_RMID, NULL) == -1) {
             perror("Failed to remove message queue");
         } else {
-            log_message("Removed message queue\n");
+            #if DEBUG
+            debug_message("Removed message queue\n");
+            #endif
             msqid = -1;
         }
     }
 }
 
 void cleanup_mutexes() {
-    log_message("CONTROLLER: Cleaning up mutexes...\n");
+    #if DEBUG
+    debug_message("CONTROLLER: Cleaning up mutexes...\n");
+    #endif
     
     // Destroy the pipe mutex
     if (pthread_mutex_destroy(&pipe_mutex) != 0) {
         perror("Failed to destroy pipe mutex");
     } else {
-        log_message("Destroyed pipe mutex\n");
+        #if DEBUG
+        debug_message("Destroyed pipe mutex\n");
+        #endif
     }
     
     // Destroy the validator message mutex
     if (pthread_mutex_destroy(&validator_message_mutex) != 0) {
         perror("Failed to destroy validator message mutex");
     } else {
-        log_message("Destroyed validator message mutex\n");
+        #if DEBUG
+        debug_message("Destroyed validator message mutex\n");
+        #endif
     }
     
     // Destroy transaction pool mutex and condition variable if they exist
@@ -469,7 +563,7 @@ void cleanup_all_resources() {
     
     log_message("CONTROLLER: Beginning cleanup of all resources...\n");
     
-    // First terminate all processes (existing function)
+    // First terminate all processes
     terminate_processes();
     
     // Then cleanup all IPC mechanisms in order
@@ -478,6 +572,11 @@ void cleanup_all_resources() {
     cleanup_semaphores();      // Semaphores before shared memory
     cleanup_shared_memory();   // Shared memory last as other cleanups might need it
     cleanup_mutexes();         // Clean up synchronization primitives
+    
+    // Remove the ledger file
+    if (remove("blockchain_ledger.txt") == 0) {
+        log_message("CONTROLLER: Removed blockchain ledger file\n");
+    }
     
     // Finally, free any remaining allocated memory
     free_statistics();
@@ -501,10 +600,13 @@ Block* create_block(int miner_id, Transaction* selected_tx) {
     }
 
     // Initialize block fields
-    block->txb_id = miner_id;
+    sem_wait(blockchain_ledger_sem);
+    block->txb_id = miner_id + blockchain_ledger->num_blocks;
+    sem_post(blockchain_ledger_sem);
     block->txb_timestamp = time(NULL);
     block->nonce = 0;
 
+    sem_wait(blockchain_ledger_sem);
     // Copy the initial hash for the first block, or the previous block's hash otherwise
     if (blockchain_ledger->num_blocks == 0) {
         strncpy(block->prev_hash, INITIAL_HASH, HASH_SIZE);
@@ -514,13 +616,17 @@ Block* create_block(int miner_id, Transaction* selected_tx) {
         compute_sha256(prev_block, prev_hash, num_transactions_per_block_global);
         strncpy(block->prev_hash, prev_hash, HASH_SIZE);
     }
-
+    sem_post(blockchain_ledger_sem);
     // Copy transactions and validate them
-    log_message("MINER: Copying %d transactions to new block\n", num_transactions_per_block_global);
+    #if DEBUG
+    debug_message("MINER: Copying %d transactions to new block\n", num_transactions_per_block_global);
+    #endif
     for (int i = 0; i < num_transactions_per_block_global; i++) {
         block->transactions[i] = selected_tx[i];
-        log_message("MINER: Transaction %d - ID: %d, Reward: %d\n", 
+        #if DEBUG
+        debug_message("MINER: Transaction %d - ID: %d, Reward: %d\n", 
                    i, selected_tx[i].tx_id, selected_tx[i].reward);
+        #endif
     }
 
     return block;
@@ -553,7 +659,9 @@ void *miner_thread(void *arg) {
         Transaction* selected_tx = get_random_transactions(num_transactions_per_block_global);
         if (selected_tx != NULL) {
             printin = 1;
-            log_message("MINER: Thread %d selected %d transactions\n", id, num_transactions_per_block_global);
+            #if DEBUG
+            debug_message("MINER: Thread %d selected %d transactions\n", id, num_transactions_per_block_global);
+            #endif
             
             // Check again if we should be shutting down
             if (!running_miner_threads) {
@@ -577,6 +685,7 @@ void *miner_thread(void *arg) {
                 break;
             }
 
+            log_message("MINER: Thread %d mining block %d\n", id, block->txb_id);
             // Try to mine the block
             PoWResult result = proof_of_work(block, num_transactions_per_block_global);
             
@@ -589,13 +698,18 @@ void *miner_thread(void *arg) {
             }
             
             if (!result.error) {
-                log_message("MINER: Thread %d successfully mined block %d with hash %s (nonce: %d)\n", 
-                          id, block->txb_id, result.hash, block->nonce);
-                // TODO: Submit block to validator
-                // Send via named pipe to validator process, send the block and miner id.
+                sem_wait(blockchain_ledger_sem);
+                log_message("MINER: Thread %d successfully mined block %d\n", 
+                          id, blockchain_ledger->num_blocks + 1);
+                sem_post(blockchain_ledger_sem);
+                #if DEBUG
+                debug_message("MINER: Sending block to validator\n");
+                #endif
                 send_block(block, id);
             } else {
-                log_message("MINER: Thread %d failed to mine block %d\n", id, block->txb_id);
+                sem_wait(blockchain_ledger_sem);
+                log_message("MINER: Thread %d failed to mine block %d\n", id, blockchain_ledger->num_blocks + 1);
+                sem_post(blockchain_ledger_sem);
             }
 
             free(block);  // Free the block after we're done with it
@@ -664,11 +778,14 @@ void send_block(Block* block, int miner_id) {
     Transaction* dest_tx = (Transaction*)((char*)block_ptr + sizeof(Block));
     
     // Log the transactions being sent for debugging
+    #if DEBUG
     log_message("MINER: Sending block with %d transactions:\n", num_transactions_per_block_global);
+    #endif
     for (int i = 0; i < num_transactions_per_block_global; i++) {
-        log_message("MINER: Transaction %d before copy - ID: %d, Reward: %d\n", 
+        #if DEBUG
+        debug_message("MINER: Transaction %d before copy - ID: %d, Reward: %d\n", 
                    i, block->transactions[i].tx_id, block->transactions[i].reward);
-        
+        #endif
         memcpy(&dest_tx[i], &block->transactions[i], sizeof(Transaction));
     }
     
@@ -686,14 +803,16 @@ void send_block(Block* block, int miner_id) {
     if (write(fd, message_buffer, total_message_size) == -1) {
         perror("MINER: Failed to send block to validator");
     } else {
-        log_message("MINER: Successfully sent block with %d transactions to validator\n", 
+        #if DEBUG
+        debug_message("MINER: Successfully sent block with %d transactions to validator\n", 
                    num_transactions_per_block_global);
-        
         // Log sent transactions
         for (int i = 0; i < num_transactions_per_block_global; i++) {
-            log_message("MINER: Sent transaction %d - ID: %d, Reward: %d\n",
+            debug_message("MINER: Sent transaction %d - ID: %d, Reward: %d\n",
                        i, block->transactions[i].tx_id, block->transactions[i].reward);
+        
         }
+        #endif
     }
     
     pthread_mutex_unlock(&pipe_mutex);
@@ -752,19 +871,25 @@ int receive_block(MessageToValidator* out_message) {
             
             // Verify the transaction was copied correctly
             if (i < 5) { // Only log first 5 to avoid spamming
-                log_message("VALIDATOR: Copied transaction %d - ID: %d, Reward: %d\n",
+                #if DEBUG
+                debug_message("VALIDATOR: Copied transaction %d - ID: %d, Reward: %d\n",
                           i, out_message->block.transactions[i].tx_id, 
                           out_message->block.transactions[i].reward);
+                #endif
             }
         }
         
-        log_message("VALIDATOR: Successfully received block %d from miner %d with nonce %d\n", 
+        #if DEBUG
+        debug_message("VALIDATOR: Successfully received block %d from miner %d with nonce %d\n", 
                    out_message->block.txb_id, out_message->miner_id, out_message->block.nonce);
+        #endif
         
         // Compute the hash directly to confirm
         char hash[HASH_SIZE];
         compute_sha256(&out_message->block, hash, num_transactions_per_block_global);
-        log_message("VALIDATOR: Block hash after receive: %s\n", hash);
+        #if DEBUG
+        debug_message("VALIDATOR: Block hash after receive: %s\n", hash);
+        #endif
         
         success = 1;
     }
@@ -813,9 +938,28 @@ Transaction* get_random_transactions(int num_transactions_needed) {
     // Get indices of all non-empty transactions
     for (int i = 0; i < transaction_pool->size; i++) {
         if (!transaction_pool->entries[i].empty) {
-            available_indices[available_transactions++] = i;
+            // Validate transaction values before adding to available indices
+            Transaction* tx = &transaction_pool->entries[i].t;
+            #if DEBUG
+            debug_message("MINER: Found transaction at index %d - ID: %d, Reward: %d, Value: %d\n",
+                       i, tx->tx_id, tx->reward, tx->value);
+            #endif
+            
+            if (tx->reward >= 1 && tx->reward <= 3 && tx->value >= 0 && tx->value <= 333) {
+                available_indices[available_transactions++] = i;
+                #if DEBUG
+                debug_message("MINER: Added valid transaction to available indices\n");
+                #endif
+            } else {
+                log_message("MINER: Transaction validation failed - Reward: %d, Value: %d\n",
+                           tx->reward, tx->value);
+            }
         }
     }
+
+    #if DEBUG
+    log_message("MINER: Found %d available transactions\n", available_transactions);
+    #endif
 
     // Check if we have enough transactions
     if (available_transactions < num_transactions_needed) {
@@ -832,8 +976,28 @@ Transaction* get_random_transactions(int num_transactions_needed) {
         int random_idx = rand() % available_transactions;
         int pool_idx = available_indices[random_idx];
 
-        // Copy the transaction
-        selected_transactions[i] = transaction_pool->entries[pool_idx].t;
+        // Copy the transaction and validate its values
+        Transaction* src_tx = &transaction_pool->entries[pool_idx].t;
+        selected_transactions[i] = *src_tx;
+        
+        #if DEBUG
+        debug_message("MINER: Copied transaction %d - ID: %d, Reward: %d, Value: %d\n",
+                   i, selected_transactions[i].tx_id, selected_transactions[i].reward, selected_transactions[i].value);
+        #endif
+        
+        // Double check values after copy
+        if (selected_transactions[i].reward < 1 || selected_transactions[i].reward > 3 ||
+            selected_transactions[i].value < 0 || selected_transactions[i].value > 333) {
+            #if DEBUG
+            debug_message("MINER: Transaction corruption detected after copy - ID: %d, Reward: %d, Value: %d\n",
+                       selected_transactions[i].tx_id, selected_transactions[i].reward, selected_transactions[i].value);
+            #endif
+            free(selected_transactions);
+            free(available_indices);
+            sem_post(tx_pool_sem);
+            pthread_mutex_unlock(&transaction_pool->mutex);
+            return NULL;
+        }
 
         // Remove this index from available_indices by replacing it with the last one
         available_indices[random_idx] = available_indices[--available_transactions];
@@ -1003,7 +1167,7 @@ int is_transaction_in_pool(Transaction* tx) {
 }
 
 // Function to validate a block
-int validate_block(Block* block) {
+int validate_block(Block* block, int miner_id) {
     if (!block) {
         #if DEBUG
         debug_message("VALIDATOR: Invalid block pointer\n");
@@ -1012,7 +1176,7 @@ int validate_block(Block* block) {
     }
 
     #if DEBUG
-    debug_message("VALIDATOR: Starting validation of block from miner %d\n", block->txb_id);
+    debug_message("VALIDATOR: Starting validation of block from miner %d\n", miner_id);
     #endif
 
     // 1. Recheck the block's PoW
@@ -1045,34 +1209,49 @@ int validate_block(Block* block) {
     debug_message("VALIDATOR: Proof of work verification successful with nonce %d\n", block->nonce);
     #endif
 
+    sem_wait(blockchain_ledger_sem);
     // 2. Check that it correctly references the latest accepted block
     if (blockchain_ledger->num_blocks > 0) {
         Block* prev_block = &blockchain_ledger->blocks[blockchain_ledger->num_blocks - 1];
         char expected_prev_hash[HASH_SIZE];
         compute_sha256(prev_block, expected_prev_hash, num_transactions_per_block_global);
+        #if DEBUG
+        debug_message("VALIDATOR: Checking block reference - Current: %s, Expected: %s\n",
+                   block->prev_hash, expected_prev_hash);
+        #endif
         
         if (strcmp(block->prev_hash, expected_prev_hash) != 0) {
             log_message("VALIDATOR: Block doesn't reference latest blockchain block\n");
+            sem_post(blockchain_ledger_sem);
             return 0;
         }
     } else if (strcmp(block->prev_hash, INITIAL_HASH) != 0) {
         log_message("VALIDATOR: First block doesn't have correct initial hash\n");
+        sem_post(blockchain_ledger_sem);
         return 0;
     }
+    sem_post(blockchain_ledger_sem);
 
     // 3. Check that the transactions are still in the pool
+    #if DEBUG
+    log_message("VALIDATOR: Verifying transactions are still in pool\n");
+    #endif
     pthread_mutex_lock(&transaction_pool->mutex);
     for (int i = 0; i < num_transactions_per_block_global; i++) {
-        if (!is_transaction_in_pool(&block->transactions[i])) {
-            log_message("VALIDATOR: Transaction %d no longer in pool\n", 
-                       block->transactions[i].tx_id);
+        Transaction* tx = &block->transactions[i];
+        #if DEBUG
+        debug_message("VALIDATOR: Checking transaction %d - ID: %d, Reward: %d, Value: %d\n",
+                   i+1, tx->tx_id, tx->reward, tx->value);
+        #endif
+        
+        if (!is_transaction_in_pool(tx)) {
+            log_message("VALIDATOR: Transaction %d no longer in pool\n", tx->tx_id);
             pthread_mutex_unlock(&transaction_pool->mutex);
             return 0;
         }
     }
     pthread_mutex_unlock(&transaction_pool->mutex);
 
-    log_message("VALIDATOR: Block from miner %d is valid\n", block->txb_id);
     return 1;
 }
 
@@ -1104,10 +1283,25 @@ void validator_process() {
     memset(message, 0, message_with_block_size);
     memset(processing_message, 0, message_with_block_size);
     
+    log_message("VALIDATOR: Process started, waiting for blocks...\n");
+    
     while(running_validator_process) {
+        // Check if we should stop before processing more blocks
+        if (!running_validator_process) {
+            break;
+        }
+
         pthread_mutex_lock(&validator_message_mutex);
         // Receive the block from the miner
         if(receive_block(message)) {
+            // Check if we should stop before processing this block
+            if (!running_validator_process) {
+                pthread_mutex_unlock(&validator_message_mutex);
+                break;
+            }
+
+            log_message("VALIDATOR: Received block from miner %d\n", message->miner_id);
+            
             // Make a complete copy of the message including all transactions
             memcpy(processing_message, message, message_with_block_size);
             pthread_mutex_unlock(&validator_message_mutex);
@@ -1115,34 +1309,36 @@ void validator_process() {
             #if DEBUG
             debug_message("VALIDATOR: Processing block %d with nonce %d\n", 
                        processing_message->block.txb_id, processing_message->block.nonce);
-            #endif
-            
             // Log all transactions in the processing message for debug
             for (int i = 0; i < num_transactions_per_block_global; i++) {
-                #if DEBUG
-                debug_message("VALIDATOR: Processing transaction %d - ID: %d, Reward: %d\n",
-                          i, processing_message->block.transactions[i].tx_id, 
-                          processing_message->block.transactions[i].reward);
-                #endif
+                Transaction* tx = &processing_message->block.transactions[i];
+                
+                debug_message("VALIDATOR: Transaction %d - ID: %d, Reward: %d, Value: %d\n",
+                          i+1, tx->tx_id, tx->reward, tx->value);
             }
+            #endif
 
             // Validate the block
-            if (validate_block(&processing_message->block)) {
-                log_message("VALIDATOR: Block validated successfully\n");
-                // Calculate credits for the miner
-                int credits = calculate_miner_credits(&processing_message->block);
+            if (validate_block(&processing_message->block, processing_message->miner_id)) {
+                log_message("VALIDATOR: Block %d validated successfully\n", processing_message->block.txb_id);
                 
                 // Remove validated transactions from pool
+                #if DEBUG
+                debug_message("VALIDATOR: Removing validated transactions from pool\n");
+                #endif
                 remove_validated_transactions(&processing_message->block);
                 
                 // Add block to blockchain
-                //add_block_to_blockchain(&processing_message->block);
-            } else {    
                 #if DEBUG
-                debug_message("VALIDATOR: Block validation failed\n");
+                debug_message("VALIDATOR: Adding block %d to blockchain\n", processing_message->block.txb_id);
                 #endif
-                // Send invalid block statistics
-                //send_invalid_block_statistics(&processing_message->block);
+                add_block_to_blockchain(&processing_message->block);
+                
+                #if DEBUG
+                debug_message("VALIDATOR: Block %d processing complete\n", processing_message->block.txb_id);
+                #endif
+            } else {    
+                log_message("VALIDATOR: Block %d validation failed\n", processing_message->block.txb_id);
             }
         } else {
             pthread_mutex_unlock(&validator_message_mutex);
@@ -1155,6 +1351,162 @@ void validator_process() {
     #if DEBUG
     debug_message("VALIDATOR: Process shutting down\n");
     #endif
+}
+
+void add_block_to_blockchain(Block* block) {
+    if (!block) {
+        log_message("VALIDATOR: Invalid block pointer in add_block_to_blockchain\n");
+        return;
+    }
+
+    #if DEBUG
+    debug_message("VALIDATOR: Starting to add block %d to blockchain\n", block->txb_id);
+    debug_message("VALIDATOR: Block details before adding - Nonce: %d\n", block->nonce);
+    #endif
+
+    // Log transactions before adding to blockchain
+    #if DEBUG
+    debug_message("VALIDATOR: Transactions in block before adding to blockchain:\n");
+    for (int i = 0; i < num_transactions_per_block_global; i++) {
+        Transaction* tx = &block->transactions[i];
+        debug_message("VALIDATOR: Transaction %d - ID: %d, Reward: %d, Value: %d\n",
+                   i+1, tx->tx_id, tx->reward, tx->value);
+    }
+    #endif
+
+    // Wait for semaphore to access shared memory
+    if (sem_wait(blockchain_ledger_sem) == -1) {
+        perror("VALIDATOR: Failed to acquire blockchain semaphore");
+        return;
+    }
+
+    // Check if we've reached the maximum number of blocks
+    if (blockchain_ledger->num_blocks >= max_blocks_global) {
+        log_message("VALIDATOR: Maximum number of blocks reached (%d). Initiating shutdown.\n", max_blocks_global);
+        sem_post(blockchain_ledger_sem);
+        running_validator_process = 0;
+        return;
+    }
+
+    #if DEBUG
+    debug_message("VALIDATOR: Acquired blockchain semaphore, current block count: %d\n", 
+                blockchain_ledger->num_blocks);
+    #endif
+
+    // Get pointer to the destination block in the ledger
+    Block* dest_block = &blockchain_ledger->blocks[blockchain_ledger->num_blocks];
+    
+    // Copy the block header (everything except the transactions array)
+    memcpy(dest_block, block, sizeof(Block));
+    
+    // Copy each transaction individually
+    for (int i = 0; i < num_transactions_per_block_global; i++) {
+        memcpy(&dest_block->transactions[i], &block->transactions[i], sizeof(Transaction));
+        #if DEBUG
+        debug_message("VALIDATOR: Copied transaction %d - ID: %d, Reward: %d, Value: %d\n",
+                   i+1, dest_block->transactions[i].tx_id, 
+                   dest_block->transactions[i].reward,
+                   dest_block->transactions[i].value);
+        #endif
+    }
+
+    // Increment block count after successful copy
+    blockchain_ledger->num_blocks++;
+
+    // Append the new block to the ledger log file
+    append_block_to_ledger_log(dest_block);
+
+    log_message("VALIDATOR: Successfully added block %d to blockchain (total blocks: %d)\n", 
+                block->txb_id, blockchain_ledger->num_blocks);
+
+    // Check if we've reached the maximum number of blocks
+    if (blockchain_ledger->num_blocks >= max_blocks_global) {
+        log_message("VALIDATOR: Maximum number of blocks reached (%d). Initiating shutdown.\n", max_blocks_global);
+        running_validator_process = 0;
+    }
+    // Release semaphore
+    if (sem_post(blockchain_ledger_sem) == -1) {
+        perror("VALIDATOR: Failed to release blockchain semaphore");
+    }
+}
+
+void initialize_ledger_log() {
+    // Remove existing ledger file if it exists
+    remove("blockchain_ledger.txt");
+    
+    // Create a new ledger file
+    FILE* ledger_file = fopen("blockchain_ledger.txt", "w");
+    if (ledger_file) {
+        fprintf(ledger_file, "=================== Blockchain Ledger ===================\n");
+        fclose(ledger_file);
+        log_message("CONTROLLER: Created new blockchain ledger file\n");
+    } else {
+        log_message("CONTROLLER: Failed to create blockchain ledger file\n");
+    }
+}
+
+void append_block_to_ledger_log(Block* block) {
+    FILE* ledger_file = fopen("blockchain_ledger.txt", "a");
+    if (!ledger_file) {
+        log_message("Error: Failed to open ledger log file\n");
+        return;
+    }
+
+    char block_time[26];
+    char tx_time[26];
+    
+    // Convert block timestamp to readable format
+    struct tm* block_tm = localtime(&block->txb_timestamp);
+    if (block_tm == NULL) {
+        strcpy(block_time, "Invalid timestamp");
+    } else {
+        strftime(block_time, sizeof(block_time), "%Y-%m-%d %H:%M:%S", block_tm);
+    }
+    
+    fprintf(ledger_file, "||----  Block %03d ----||  \n", blockchain_ledger->num_blocks);
+    fprintf(ledger_file, "Block ID: BLOCK-%d \n", block->txb_id);
+    fprintf(ledger_file, "Previous Hash:\n%s\n", block->prev_hash);
+    fprintf(ledger_file, "Block Timestamp: %s \n", block_time);
+    fprintf(ledger_file, "Nonce: %d \n", block->nonce);
+    fprintf(ledger_file, "Transactions: \n");
+    
+    for (int j = 0; j < num_transactions_per_block_global; j++) {
+        Transaction* tx = &block->transactions[j];
+        if (tx == NULL) {
+            fprintf(ledger_file, "  [%d] Invalid transaction\n", j+1);
+            continue;
+        }
+
+        // Convert transaction timestamp to readable format
+        struct tm* tx_tm = localtime(&tx->tx_timestamp);
+        if (tx_tm == NULL) {
+            strcpy(tx_time, "Invalid timestamp");
+        } else {
+            strftime(tx_time, sizeof(tx_time), "%Y-%m-%d %H:%M:%S", tx_tm);
+        }
+
+        fprintf(ledger_file, "  [%d] ID: TX-%d | Reward: %d | Value: %d | Timestamp: %s \n",
+                j+1, tx->tx_id, tx->reward, tx->value, tx_time);
+    }
+    fprintf(ledger_file, "||-----------------------------------------|| \n");
+    
+    fclose(ledger_file);
+}
+
+void dump_ledger() {
+    // Read and print the contents of the ledger log file
+    FILE* ledger_file = fopen("blockchain_ledger.txt", "r");
+    if (!ledger_file) {
+        log_message("Error: Failed to open ledger log file\n");
+        return;
+    }
+
+    char line[256];
+    while (fgets(line, sizeof(line), ledger_file)) {
+        log_message("%s", line);
+    }
+    
+    fclose(ledger_file);
 }
 
 void print_statistics(){
@@ -1404,26 +1756,19 @@ void terminate_processes() {
     static int termination_in_progress = 0;
     
     if (termination_in_progress) {
-        return;  // Silent return to prevent multiple terminations
+        return;
     }
     
-    termination_in_progress = 1;  // Set the flag
+    termination_in_progress = 1;
     
     log_message("CONTROLLER: Beginning process termination...\n");
     
-    #if DEBUG
-    print_process_status();  // Print status before termination
-    #endif
-    
     // First send SIGTERM to all child processes
-    int termination_sent = 0;
-    
     if (validator_pid > 0 && kill(validator_pid, 0) == 0) {
         #if DEBUG
         debug_message("CONTROLLER: Sending SIGTERM to validator (PID: %d)\n", validator_pid);
         #endif
         kill(validator_pid, SIGTERM);
-        termination_sent = 1;
     }
     
     if (statistics_pid > 0 && kill(statistics_pid, 0) == 0) {
@@ -1431,26 +1776,13 @@ void terminate_processes() {
         debug_message("CONTROLLER: Sending SIGTERM to statistics (PID: %d)\n", statistics_pid);
         #endif
         kill(statistics_pid, SIGTERM);
-        termination_sent = 1;
     }
     
     if (miner_process_pid > 0 && kill(miner_process_pid, 0) == 0) {
-        // First try to wait for all miner threads to finish
-        wait_for_miner_threads();
         #if DEBUG
         debug_message("CONTROLLER: Sending SIGTERM to miner process (PID: %d)\n", miner_process_pid);
         #endif
         kill(miner_process_pid, SIGTERM);
-        termination_sent = 1;
-    }
-    
-    // If no processes to terminate, return early
-    if (!termination_sent) {
-        #if DEBUG
-        debug_message("CONTROLLER: No active processes to terminate\n");
-        #endif
-        termination_in_progress = 0;  // Reset the flag before returning
-        return;
     }
     
     // Wait for processes to terminate with timeout
@@ -1458,32 +1790,17 @@ void terminate_processes() {
     time_t start_time = time(NULL);
     pid_t wpid;
     int status;
-    int remaining_processes = 0;
     
-    // Wait a bit for processes to terminate on their own
-    do {
-        remaining_processes = 0;
-        
-        if (validator_pid > 0 && kill(validator_pid, 0) == 0) 
-            remaining_processes++;
-            
-        if (statistics_pid > 0 && kill(statistics_pid, 0) == 0) 
-            remaining_processes++;
-            
-        if (miner_process_pid > 0 && kill(miner_process_pid, 0) == 0) 
-            remaining_processes++;
-        
-        // Check for any terminated children
-        while ((wpid = waitpid(-1, &status, WNOHANG)) > 0) {
+    while (time(NULL) - start_time < timeout) {
+        wpid = waitpid(-1, &status, WNOHANG);
+        if (wpid > 0) {
             if (WIFEXITED(status)) {
                 #if DEBUG
-                debug_message("CONTROLLER: Process %d terminated normally with status %d\n", 
-                           wpid, WEXITSTATUS(status));
+                debug_message("CONTROLLER: Process %d terminated normally\n", wpid);
                 #endif
             } else if (WIFSIGNALED(status)) {
                 #if DEBUG
-                debug_message("CONTROLLER: Process %d killed by signal %d\n", 
-                           wpid, WTERMSIG(status));
+                debug_message("CONTROLLER: Process %d killed by signal %d\n", wpid, WTERMSIG(status));
                 #endif
             }
             
@@ -1493,39 +1810,23 @@ void terminate_processes() {
             if (wpid == miner_process_pid) miner_process_pid = -1;
         }
         
-        // If no more processes or timeout reached, exit the loop
-        if (remaining_processes == 0 || time(NULL) - start_time > timeout)
+        // If all processes are terminated, break
+        if (validator_pid == -1 && statistics_pid == -1 && miner_process_pid == -1) {
             break;
-            
+        }
+        
         usleep(100000);  // Sleep for 100ms between checks
-    } while (1);
+    }
     
     // If timeout reached and processes still exist, force kill them
-    if (remaining_processes > 0) {
+    if (validator_pid > 0 || statistics_pid > 0 || miner_process_pid > 0) {
         #if DEBUG
-        log_message("CONTROLLER: Timeout waiting for processes to terminate. Forcing termination.\n");
+        debug_message("CONTROLLER: Timeout waiting for processes to terminate. Forcing termination.\n");
         #endif
         
-        if (validator_pid > 0 && kill(validator_pid, 0) == 0) {
-            #if DEBUG
-            debug_message("CONTROLLER: Force killing validator (PID: %d)\n", validator_pid);
-            #endif
-            kill(validator_pid, SIGKILL);
-        }
-        
-        if (statistics_pid > 0 && kill(statistics_pid, 0) == 0) {
-            #if DEBUG
-            debug_message("CONTROLLER: Force killing statistics (PID: %d)\n", statistics_pid);
-            #endif
-            kill(statistics_pid, SIGKILL);
-        }
-        
-        if (miner_process_pid > 0 && kill(miner_process_pid, 0) == 0) {
-            #if DEBUG
-            debug_message("CONTROLLER: Force killing miner process (PID: %d)\n", miner_process_pid);
-            #endif
-            kill(miner_process_pid, SIGKILL);
-        }
+        if (validator_pid > 0) kill(validator_pid, SIGKILL);
+        if (statistics_pid > 0) kill(statistics_pid, SIGKILL);
+        if (miner_process_pid > 0) kill(miner_process_pid, SIGKILL);
         
         // Wait one final time for any killed processes
         usleep(500000);  // 500ms wait
@@ -1533,11 +1834,9 @@ void terminate_processes() {
     }
     
     #if DEBUG
-    print_process_status();  // Print final status
-    #endif
-    
     log_message("CONTROLLER: Process termination completed\n");
-    termination_in_progress = 0;  // Reset the flag at the end
+    #endif
+    termination_in_progress = 0;
 }
 
 // Function to remove transactions from pool after block validation
@@ -1558,7 +1857,7 @@ void remove_validated_transactions(Block* block) {
                 
                 // Log the transaction being removed
                 #if DEBUG
-                debug_message("Removing transaction: ID=%d, Value=%.2f, Reward=%d\n",
+                debug_message("Removing transaction: ID=%d, Value=%d, Reward=%d\n",
                           validated_tx->tx_id,
                           validated_tx->value,
                           validated_tx->reward);
@@ -1633,6 +1932,16 @@ int main(int argc, char *argv[]) {
             print_stats_flag = 0;  // Reset the flag
         }
         
+        // Check if we've reached the maximum number of blocks
+        sem_wait(blockchain_ledger_sem);
+        if (blockchain_ledger->num_blocks >= max_blocks_global) {
+            log_message("CONTROLLER: Maximum number of blocks reached (%d). Initiating shutdown.\n", max_blocks_global);
+            sem_post(blockchain_ledger_sem);
+            running_miner_threads = 0;  // Signal to exit the loop
+            break;
+        }
+        sem_post(blockchain_ledger_sem);
+        
         // Check if child processes are still running
         if (miner_process_pid > 0 && kill(miner_process_pid, 0) != 0) {
             log_message("CONTROLLER: Miner process ended unexpectedly, initiating shutdown\n");
@@ -1664,4 +1973,5 @@ int main(int argc, char *argv[]) {
     
     return 0;
 }
+
 

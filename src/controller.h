@@ -7,6 +7,8 @@
 
 #include "common.h"
 
+
+
 // Configuration functions
 Config read_config();
 void setup(Config config);
@@ -45,7 +47,10 @@ Block* create_block(int miner_id, Transaction* selected_tx);
 void send_block(Block* block, int miner_id);
 int receive_block(MessageToValidator* message);
 void remove_validated_transactions(Block* block);
-
+void add_block_to_blockchain(Block* block);
+void dump_ledger();
+void initialize_ledger_log();
+void append_block_to_ledger_log(Block* block);
 
 
 // Cleanup functions

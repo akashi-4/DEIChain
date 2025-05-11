@@ -96,8 +96,9 @@ int add_transaction_to_pool(Transaction tx) {
                 transaction_pool->entries[i].t = tx;
                 transaction_pool->transactions_pending++;
                 result = i;
-                log_message("TXGEN: Added transaction %d to pool at position %d\n", tx.tx_id, i);
-                
+                #if DEBUG
+                debug_message("TXGEN: Added transaction %d to pool at position %d\n", tx.tx_id, i);
+                #endif
                 // If we now have enough transactions for a block, signal the condition variable
                 if (transaction_pool->transactions_pending >= transaction_pool->num_transactions_per_block) {
                     pthread_mutex_lock(&transaction_pool->mutex);
@@ -172,15 +173,27 @@ int main(int argc, char *argv[]) {
     while (running) {
         // Generate a transaction
         Transaction tx;
-        tx.tx_id = getpid() * 1000 + num_transactions; // Make ID unique across processes
-        tx.reward = reward;
-        tx.value = (double)(rand() % 1000) / 3.0;
+        memset(&tx, 0, sizeof(Transaction));  // Initialize all fields to 0
+        
+        // Generate a unique transaction ID using process ID and timestamp
+        tx.tx_id = getpid() + num_transactions;
+        tx.reward = reward;  // This is already validated in main()
+        tx.value = (rand() % 1000) / 3;  // Value between 0 and 333
         tx.tx_timestamp = time(NULL);
+
+        // Validate transaction values before adding to pool
+        if (tx.reward < 1 || tx.reward > 3 || tx.value < 0 || tx.value > 333) {
+            log_message("TXGEN: Invalid transaction values - ID: %d, Reward: %d, Value: %d\n",
+                       tx.tx_id, tx.reward, tx.value);
+            usleep(sleep_time * 1000);
+            continue;
+        }
+
 
         // Try to add the transaction to the pool
         int result = add_transaction_to_pool(tx);
         if (result >= 0) {
-            log_message("TXGEN: Transaction %d generated with reward %d and value %.2f\n", 
+            log_message("TXGEN: TX-%d generated with reward %d, value %d\n",
                        tx.tx_id, tx.reward, tx.value);
             num_transactions++;
             keep_printing = 1;

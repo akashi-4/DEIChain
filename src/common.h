@@ -28,7 +28,7 @@
 typedef struct {
     int tx_id; // PID of transaction generator + incremented number
     int reward; // 1 to 3 but it can be higher due to aging
-    double value; // quantity associated with the transaction
+    int value; // quantity associated with the transaction
     time_t tx_timestamp; // time of transaction
 } Transaction;
 

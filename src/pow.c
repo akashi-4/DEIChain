@@ -159,16 +159,16 @@ int check_difficulty(const char *hash, const int reward) {
 /* Function to verify a nonce */
 int verify_nonce(const Block *block, int transactions_per_block) {
     #if DEBUG
-    log_message("POW: Starting verification of nonce %d\n", block->nonce);
+    debug_message("POW: Starting verification of nonce %d\n", block->nonce);
     #endif  
     char hash[HASH_SIZE];
     int reward = get_max_transaction_reward(block, transactions_per_block);
     #if DEBUG
-    log_message("POW: Reward: %d\n", reward);
+    debug_message("POW: Reward: %d\n", reward);
     #endif
     compute_sha256(block, hash, transactions_per_block);
     #if DEBUG
-    log_message("POW: Hash: %s (nonce: %d)\n", hash, block->nonce);
+    debug_message("POW: Hash: %s (nonce: %d)\n", hash, block->nonce);
     #endif
     return check_difficulty(hash, reward);
 }
@@ -192,20 +192,26 @@ PoWResult proof_of_work(Block *block, int transactions_per_block) {
         if (check_difficulty(hash, reward)) {
             result.elapsed_time = (double)(clock() - start) / CLOCKS_PER_SEC;
             strcpy(result.hash, hash);
-            log_message("MINER: Found valid hash after %d operations\n", result.operations);
+            #if DEBUG
+            debug_message("MINER: Found valid hash after %d operations\n", result.operations);
+            #endif
             return result;
         }
 
         block->nonce++;
         if (block->nonce > POW_MAX_OPS) {
-            log_message("MINER: Giving up after %d operations\n", POW_MAX_OPS);
+            #if DEBUG
+            debug_message("MINER: Giving up after %d operations\n", POW_MAX_OPS);
+            #endif
             result.elapsed_time = (double)(clock() - start) / CLOCKS_PER_SEC;
             result.error = 1;
             return result;
         }
 
         if (DEBUG && block->nonce % 100000 == 0) {
-            log_message("MINER: Nonce %d\n", block->nonce);
+            #if DEBUG
+            debug_message("MINER: Nonce %d\n", block->nonce);
+            #endif
         }
         result.operations++;
     }
