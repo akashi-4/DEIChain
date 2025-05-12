@@ -1235,7 +1235,7 @@ int validate_block(Block* block, int miner_id) {
 
     // 3. Check that the transactions are still in the pool
     #if DEBUG
-    log_message("VALIDATOR: Verifying transactions are still in pool\n");
+    debug_message("VALIDATOR: Verifying transactions are still in pool\n");
     #endif
     pthread_mutex_lock(&transaction_pool->mutex);
     for (int i = 0; i < num_transactions_per_block_global; i++) {
@@ -1253,6 +1253,9 @@ int validate_block(Block* block, int miner_id) {
     }
     pthread_mutex_unlock(&transaction_pool->mutex);
 
+    #if DEBUG
+    debug_message("DEBUG: Block %d hash: %s\n", block->txb_id, current_hash);
+    #endif
     return 1;
 }
 
@@ -1362,9 +1365,8 @@ void add_block_to_blockchain(Block* block) {
 
     #if DEBUG
     debug_message("VALIDATOR: Starting to add block %d to blockchain\n", block->txb_id);
-    debug_message("VALIDATOR: Block details before adding - Nonce: %d\n", block->nonce);
     #endif
-
+    log_message("VALIDATOR: Block details before adding - Nonce: %d\n Hash: %s\n", block->nonce, block->prev_hash);
     // Log transactions before adding to blockchain
     #if DEBUG
     debug_message("VALIDATOR: Transactions in block before adding to blockchain:\n");
