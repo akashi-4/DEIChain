@@ -93,6 +93,12 @@ int add_transaction_to_pool(Transaction tx) {
             if (transaction_pool->entries[i].empty) {
                 transaction_pool->entries[i].empty = 0;
                 transaction_pool->entries[i].age = 0;
+                
+                // Lock mutex to safely increment the global tx_id counter
+                pthread_mutex_lock(&transaction_pool->mutex);
+                tx.tx_id = transaction_pool->next_tx_id++;
+                pthread_mutex_unlock(&transaction_pool->mutex);
+                
                 transaction_pool->entries[i].t = tx;
                 transaction_pool->transactions_pending++;
                 result = i;
@@ -175,8 +181,8 @@ int main(int argc, char *argv[]) {
         Transaction tx;
         memset(&tx, 0, sizeof(Transaction));  // Initialize all fields to 0
         
-        // Generate a unique transaction ID using process ID and timestamp
-        tx.tx_id = getpid() + num_transactions;
+        // tx_id will be assigned by the transaction pool
+        tx.tx_id = num_transactions;   // temporary ID, will be assigned by pool
         tx.reward = reward;  // This is already validated in main()
         tx.value = (rand() % 1000) / 3;  // Value between 0 and 333
         tx.tx_timestamp = time(NULL);
@@ -188,7 +194,6 @@ int main(int argc, char *argv[]) {
             usleep(sleep_time * 1000);
             continue;
         }
-
 
         // Try to add the transaction to the pool
         int result = add_transaction_to_pool(tx);

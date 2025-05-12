@@ -329,6 +329,7 @@ void setup(Config config) {
     transaction_pool->size = config.tx_pool_size;
     transaction_pool->transactions_pending = 0;
     transaction_pool->num_transactions_per_block = config.transactions_per_block;
+    transaction_pool->next_tx_id = 1;  // Start transaction IDs from 1
     
     // Initialize mutex and condition variable
     pthread_mutexattr_t mutex_attr;

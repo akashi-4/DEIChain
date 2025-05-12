@@ -60,6 +60,7 @@ typedef struct {
     int size;                   // Size of the pool (TX_POOL_SIZE from config)
     int transactions_pending;   // Number of pending transactions
     int num_transactions_per_block;  // Number of transactions needed per block
+    int next_tx_id;            // Global counter for generating unique transaction IDs
     pthread_mutex_t mutex;      // Mutex for condition variable
     pthread_cond_t enough_tx;   // Condition variable to signal when enough transactions are available
     TransactionEntry entries[]; // Flexible array member for the transaction entries
