@@ -51,6 +51,7 @@ void add_block_to_blockchain(Block* block);
 void dump_ledger();
 void initialize_ledger_log();
 void append_block_to_ledger_log(Block* block);
+void age_transactions_in_pool();
 
 
 // Cleanup functions

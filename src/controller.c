@@ -32,6 +32,7 @@
 #define VALIDATOR_PIPE_NAME "/tmp/validator_pipe"
 #define MAX_SLEEP 10
 #define BLOCKCHAIN_LEDGER_SEM "/blockchain_ledger_sem"
+#define AGE_MULTIPLIER 50
 
 #define min(a, b) ((a) < (b) ? (a) : (b))
 // Booting the system, reading the configuration file, validating the data in the
@@ -939,22 +940,7 @@ Transaction* get_random_transactions(int num_transactions_needed) {
     // Get indices of all non-empty transactions
     for (int i = 0; i < transaction_pool->size; i++) {
         if (!transaction_pool->entries[i].empty) {
-            // Validate transaction values before adding to available indices
-            Transaction* tx = &transaction_pool->entries[i].t;
-            #if DEBUG
-            debug_message("MINER: Found transaction at index %d - ID: %d, Reward: %d, Value: %d\n",
-                       i, tx->tx_id, tx->reward, tx->value);
-            #endif
-            
-            if (tx->reward >= 1 && tx->reward <= 3 && tx->value >= 0 && tx->value <= 333) {
-                available_indices[available_transactions++] = i;
-                #if DEBUG
-                debug_message("MINER: Added valid transaction to available indices\n");
-                #endif
-            } else {
-                log_message("MINER: Transaction validation failed - Reward: %d, Value: %d\n",
-                           tx->reward, tx->value);
-            }
+            available_indices[available_transactions++] = i;
         }
     }
 
@@ -986,20 +972,6 @@ Transaction* get_random_transactions(int num_transactions_needed) {
                    i, selected_transactions[i].tx_id, selected_transactions[i].reward, selected_transactions[i].value);
         #endif
         
-        // Double check values after copy
-        if (selected_transactions[i].reward < 1 || selected_transactions[i].reward > 3 ||
-            selected_transactions[i].value < 0 || selected_transactions[i].value > 333) {
-            #if DEBUG
-            debug_message("MINER: Transaction corruption detected after copy - ID: %d, Reward: %d, Value: %d\n",
-                       selected_transactions[i].tx_id, selected_transactions[i].reward, selected_transactions[i].value);
-            #endif
-            free(selected_transactions);
-            free(available_indices);
-            sem_post(tx_pool_sem);
-            pthread_mutex_unlock(&transaction_pool->mutex);
-            return NULL;
-        }
-
         // Remove this index from available_indices by replacing it with the last one
         available_indices[random_idx] = available_indices[--available_transactions];
     }
@@ -1167,6 +1139,31 @@ int is_transaction_in_pool(Transaction* tx) {
     return 0;  // Not found in pool
 }
 
+// Function to age transactions in the pool and update rewards
+void age_transactions_in_pool() {
+    pthread_mutex_lock(&transaction_pool->mutex);
+    
+    for (int i = 0; i < transaction_pool->size; i++) {
+        if (!transaction_pool->entries[i].empty) {
+            // Increment age
+            transaction_pool->entries[i].age++;
+            
+            // Check if we need to increase reward (age mod 50 == 0)
+            if (transaction_pool->entries[i].age % AGE_MULTIPLIER == 0) {
+                transaction_pool->entries[i].t.reward++;
+                #if DEBUG
+                debug_message("VALIDATOR: Increased reward for transaction %d (age: %d, new reward: %d)\n",
+                          transaction_pool->entries[i].t.tx_id,
+                          transaction_pool->entries[i].age,
+                          transaction_pool->entries[i].t.reward);
+                #endif
+            }
+        }
+    }
+    
+    pthread_mutex_unlock(&transaction_pool->mutex);
+}
+
 // Function to validate a block
 int validate_block(Block* block, int miner_id) {
     if (!block) {
@@ -1179,6 +1176,9 @@ int validate_block(Block* block, int miner_id) {
     #if DEBUG
     debug_message("VALIDATOR: Starting validation of block from miner %d\n", miner_id);
     #endif
+
+    // Age all transactions in the pool before validation
+    age_transactions_in_pool();
 
     // 1. Recheck the block's PoW
     #if DEBUG
@@ -1365,8 +1365,9 @@ void add_block_to_blockchain(Block* block) {
 
     #if DEBUG
     debug_message("VALIDATOR: Starting to add block %d to blockchain\n", block->txb_id);
+    debug_message("VALIDATOR: Block details before adding - Nonce: %d\n Hash: %s\n", block->nonce, block->prev_hash);
     #endif
-    log_message("VALIDATOR: Block details before adding - Nonce: %d\n Hash: %s\n", block->nonce, block->prev_hash);
+    
     // Log transactions before adding to blockchain
     #if DEBUG
     debug_message("VALIDATOR: Transactions in block before adding to blockchain:\n");
