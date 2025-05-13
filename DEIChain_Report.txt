@@ -1,0 +1,115 @@
+DEIChain Blockchain Simulation - Project Report
+======================================
+
+1. Architecture Overview
+-----------------------
+The DEIChain project simulates a blockchain system with multiple components:
+
+- Controller: Central process managing the system lifecycle
+- Miners: Processes with multiple threads that create blocks through proof-of-work
+- Validator: Process that verifies blocks and adds them to the blockchain
+- Transaction Generator (TxGen): External process creating transactions
+- Statistics: Process tracking system metrics
+
+The system uses shared memory for data exchange, named pipes for process communication, 
+semaphores and mutexes for synchronization, and message queues for statistics collection.
+
+2. System Architecture Schematic
+-------------------------------
+┌─────────────────────────────────────────────────────────────────┐
+│                    CONTROLLER PROCESS                            │
+│                                                                 │
+│  ┌─────────┐     ┌─────────┐    ┌─────────┐    ┌─────────┐     │
+│  │ Signal  │     │ Config  │    │ Process │    │ Cleanup │     │
+│  │ Handler │     │ Reader  │    │ Manager │    │ Manager │     │
+│  └─────────┘     └─────────┘    └─────────┘    └─────────┘     │
+└───────────────────────│─────────────│───────────────│──────────┘
+                        │             │               │
+    ┌───────────────────┼─────────────┼───────────────┼──────────────┐
+    │                   │             │               │              │
+    ▼                   ▼             ▼               ▼              ▼
+┌─────────┐       ┌──────────┐  ┌──────────┐  ┌─────────────┐ ┌─────────┐
+│ TX Pool │◄─────►│  Miner   │  │Validator │  │ Blockchain  │ │Statistics│
+│ (Shared │◄───┐  │ Process  │  │ Process  │  │   Ledger    │ │ Process  │
+│ Memory) │    │  │          │  │          │  │ (Sh. Memory)│ │          │
+└─────────┘    │  └──────────┘  └──────────┘  └─────────────┘ └─────────┘
+               │       │             │               ▲            ▲
+               │       │             └───────────────┼────────────┘
+               │       │                             │
+               │       ▼                             │
+┌─────────┐    │  ┌──────────┐                      │
+│ TxGen   │────┘  │  Miner   │                      │
+│ Process │       │ Threads  │──────────────────────┘
+└─────────┘       └──────────┘
+                        │
+                        ▼
+                  ┌───────────┐
+                  │  Named    │
+                  │   Pipe    │
+                  └───────────┘
+
+3. Synchronization Mechanisms
+----------------------------
+The project employs various synchronization mechanisms to coordinate access to shared resources:
+
+3.1 Semaphores:
+- TX_POOL_SEM: Controls access to the transaction pool, implemented as a counting semaphore
+  initialized to TX_POOL_SIZE. When a transaction is added to the pool, the semaphore value
+  decreases; when removed, it increases. This ensures the pool doesn't overflow.
+  
+- BLOCKCHAIN_LEDGER_SEM: A binary semaphore protecting the blockchain ledger, ensuring that
+  only one process (validator) can modify the blockchain at a time.
+
+The semaphores play critical roles:
+- TX_POOL_SEM serves dual purposes: it counts available slots in the transaction pool and
+  protects against concurrent access. This design choice simplifies management while
+  efficiently controlling resource allocation.
+  
+- BLOCKCHAIN_LEDGER_SEM ensures atomicity of blockchain updates, which is crucial for
+  maintaining ledger integrity.
+
+3.2 Mutex and Condition Variables:
+- transaction_pool->mutex and transaction_pool->enough_tx: Used to notify miners when
+  enough transactions are available for a new block.
+  
+- pipe_mutex: Protects access to the named pipe used for miner-validator communication.
+  
+- validator_message_mutex: Ensures thread-safe validator message handling.
+
+4. Implementation Choices and Rationale
+--------------------------------------
+4.1 Process vs. Thread Design:
+The system uses separate processes for major components (controller, validator, statistics)
+and threads for mining operations. This hybrid approach:
+- Isolates critical components for stability
+- Enables efficient mining parallelization
+- Simplifies resource allocation and recovery
+
+4.2 Shared Memory:
+Two shared memory segments are used:
+- Transaction Pool: Fast exchange of transactions between TxGen and miners
+- Blockchain Ledger: Persistent storage of validated blocks
+
+4.3 Transaction Aging Mechanism:
+Transactions age over time, with increasing rewards to prioritize older transactions.
+This prevents starvation and ensures fairness in transaction processing.
+
+4.4 Memory Management:
+The system uses flexible array members for dynamic data structures, optimizing memory
+usage and enabling variable-sized blocks and transaction pools.
+
+4.5 Graceful Shutdown:
+The controller implements comprehensive signal handling for clean termination,
+ensuring resources are properly released and no orphaned processes remain.
+
+5. Time Investment
+----------------
+Total project time: 
+
+6. Conclusion
+-----------
+The DEIChain project demonstrates a comprehensive simulation of blockchain principles
+using advanced IPC mechanisms. The semaphore design choices reflect careful consideration
+of resource contention issues, particularly in managing the transaction pool and
+ensuring blockchain integrity. The architecture successfully balances simplicity,
+performance, and correctness while faithfully implementing the blockchain concept. 

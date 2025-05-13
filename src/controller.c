@@ -701,16 +701,16 @@ void *miner_thread(void *arg) {
             
             if (!result.error) {
                 sem_wait(blockchain_ledger_sem);
-                log_message("MINER: Thread %d successfully mined block %d\n", 
+                log_message("MINER %d: Successfully mined block %d\n", 
                           id, blockchain_ledger->num_blocks + 1);
                 sem_post(blockchain_ledger_sem);
                 #if DEBUG
-                debug_message("MINER: Sending block to validator\n");
+                debug_message("MINER %d: Sending block to validator\n", id);
                 #endif
                 send_block(block, id);
             } else {
                 sem_wait(blockchain_ledger_sem);
-                log_message("MINER: Thread %d failed to mine block %d\n", id, blockchain_ledger->num_blocks + 1);
+                log_message("MINER %d: Failed to mine block %d\n", id, blockchain_ledger->num_blocks + 1);
                 sem_post(blockchain_ledger_sem);
             }
 
@@ -728,23 +728,23 @@ void *miner_thread(void *arg) {
             }
         } else if(printin == 1){
             printin = 0;
-            log_message("MINER: Thread %d - Not enough transactions in pool, waiting...\n", id);
+            log_message("MINER %d: Not enough transactions in pool, waiting...\n", id);
         }
         
         // Check one more time if we should be shutting down
         if (!running_miner_threads) {
-            log_message("MINER: Thread %d detected shutdown signal\n", id);
+            log_message("MINER %d: Detected shutdown signal\n", id);
             break;
         }
     }
     
-    log_message("MINER: Thread %d shutting down cleanly\n", id);
+    log_message("MINER %d: Shutting down cleanly\n", id);
     return NULL;
 }
 
 void send_block(Block* block, int miner_id) {
     if (!block) {
-        log_message("MINER: Null block pointer in send_block\n");
+        log_message("MINER %d: Null block pointer in send_block\n", miner_id);
         return;
     }
 
@@ -759,7 +759,7 @@ void send_block(Block* block, int miner_id) {
     void* message_buffer = malloc(total_message_size);
     
     if (!message_buffer) {
-        log_message("MINER: Failed to allocate memory for message buffer\n");
+        log_message("MINER %d: Failed to allocate memory for message buffer\n", miner_id);
         return;
     }
     
@@ -781,12 +781,12 @@ void send_block(Block* block, int miner_id) {
     
     // Log the transactions being sent for debugging
     #if DEBUG
-    log_message("MINER: Sending block with %d transactions:\n", num_transactions_per_block_global);
+    log_message("MINER %d: Sending block with %d transactions:\n", miner_id, num_transactions_per_block_global);
     #endif
     for (int i = 0; i < num_transactions_per_block_global; i++) {
         #if DEBUG
-        debug_message("MINER: Transaction %d before copy - ID: %d, Reward: %d\n", 
-                   i, block->transactions[i].tx_id, block->transactions[i].reward);
+        debug_message("MINER %d: Transaction %d before copy - ID: %d, Reward: %d\n", 
+                   miner_id, i, block->transactions[i].tx_id, block->transactions[i].reward);
         #endif
         memcpy(&dest_tx[i], &block->transactions[i], sizeof(Transaction));
     }
@@ -1324,7 +1324,7 @@ void validator_process() {
 
             // Validate the block
             if (validate_block(&processing_message->block, processing_message->miner_id)) {
-                log_message("VALIDATOR: Block %d validated successfully\n", processing_message->block.txb_id);
+                log_message("VALIDATOR: Block %d from %d validated successfully\n", processing_message->block.txb_id, processing_message->miner_id);
                 
                 // Remove validated transactions from pool
                 #if DEBUG
@@ -1342,7 +1342,7 @@ void validator_process() {
                 debug_message("VALIDATOR: Block %d processing complete\n", processing_message->block.txb_id);
                 #endif
             } else {    
-                log_message("VALIDATOR: Block %d validation failed\n", processing_message->block.txb_id);
+                log_message("VALIDATOR: Block %d from %d validation failed\n", processing_message->block.txb_id, processing_message->miner_id);
             }
         } else {
             pthread_mutex_unlock(&validator_message_mutex);
@@ -1420,8 +1420,8 @@ void add_block_to_blockchain(Block* block) {
     // Append the new block to the ledger log file
     append_block_to_ledger_log(dest_block);
 
-    log_message("VALIDATOR: Successfully added block %d to blockchain (total blocks: %d)\n", 
-                block->txb_id, blockchain_ledger->num_blocks);
+    log_message("VALIDATOR: Successfully added block %d to blockchain\n", 
+                block->txb_id);
 
     // Check if we've reached the maximum number of blocks
     if (blockchain_ledger->num_blocks >= max_blocks_global) {
