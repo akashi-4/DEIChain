@@ -84,8 +84,8 @@ typedef struct {
     int valid_block;
     int credits;
     time_t block_timestamp;
-    int num_timestamps;     // Store the number of timestamps
-    time_t *tx_timestamp;   // Pointer to timestamp array
+    int num_timestamps;     // Keep this for clarity
+    time_t tx_timestamp[];  // Flexible array member instead of pointer
 } MessageToStatistics;
 
 // Message from miner to validator
