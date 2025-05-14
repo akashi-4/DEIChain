@@ -12833,3 +12833,259 @@ STATISTICS: Total blocks in blockchain: 4
 [2025-05-14 18:15:12] CONTROLLER: Shutdown complete
 --- Logging session ended at 2025-05-14 18:15:12 ---
 
+
+--- New logging session started at 2025-05-14 18:24:51 ---
+[2025-05-14 18:24:51] CONTROLLER: DEIChain Controller starting up
+[2025-05-14 18:24:51] CONTROLLER: Created named pipe
+[2025-05-14 18:24:51] CONTROLLER: Created new blockchain ledger file
+[2025-05-14 18:24:51] CONTROLLER: Message queue created successfully with ID 24
+[2025-05-14 18:24:51] CONTROLLER: Created miner process with PID 2165
+[2025-05-14 18:24:51] MINER: Signal handler installed
+[2025-05-14 18:24:51] MINER: Successfully accessed transaction pool
+[2025-05-14 18:24:51] CONTROLLER: Created validator process with PID 2166
+[2025-05-14 18:24:51] VALIDATOR: Process started, waiting for blocks...
+[2025-05-14 18:24:51] CONTROLLER: Created statistics process with PID 2168
+[2025-05-14 18:24:51] MINER: Successfully created miner thread 1
+[2025-05-14 18:24:51] STATISTICS: Process starting up
+[2025-05-14 18:24:51] CONTROLLER: Send SIGUSR1 to print statistics(kill -SIGUSR1 2168)
+[2025-05-14 18:24:51] MINER: Thread 1 started
+[2025-05-14 18:24:51] MINER: Successfully created miner thread 2
+[2025-05-14 18:24:51] MINER: Thread 2 started
+
+--- New logging session started at 2025-05-14 18:24:54 ---
+[2025-05-14 18:24:54] TXGEN: Starting with reward=2, sleep_time=1000ms
+[2025-05-14 18:24:54] TXGEN: TX-0 generated with reward 2, value 320
+[2025-05-14 18:24:55] TXGEN: TX-1 generated with reward 2, value 111
+[2025-05-14 18:24:56] TXGEN: TX-2 generated with reward 2, value 113
+[2025-05-14 18:24:56] MINER: Thread 1 mining block 1
+[2025-05-14 18:24:57] MINER: Thread 2 mining block 2
+[2025-05-14 18:24:57] TXGEN: TX-3 generated with reward 2, value 168
+[2025-05-14 18:24:58] MINER 2: Successfully mined block 1
+[2025-05-14 18:24:58] MINER 2: Successfully sent block after 1 attempts
+[2025-05-14 18:24:58] VALIDATOR: Received block from miner 2
+[2025-05-14 18:24:58] VALIDATOR: Block 2 from 2 validated successfully
+[2025-05-14 18:24:58] VALIDATOR: Successfully added block 2 to blockchain
+[2025-05-14 18:24:58] STATISTICS: Processing message from miner 2 (valid=1)
+[2025-05-14 18:24:58] STATISTICS: Successfully updated statistics
+[2025-05-14 18:24:58] TXGEN: TX-4 generated with reward 2, value 61
+[2025-05-14 18:24:59] MINER: Thread 2 mining block 3
+[2025-05-14 18:24:59] TXGEN: TX-5 generated with reward 2, value 217
+[2025-05-14 18:25:00] MINER 2: Successfully mined block 2
+[2025-05-14 18:25:00] MINER 2: Successfully sent block after 1 attempts
+[2025-05-14 18:25:00] VALIDATOR: Received block from miner 2
+[2025-05-14 18:25:00] VALIDATOR: Block 3 from 2 validated successfully
+[2025-05-14 18:25:00] VALIDATOR: Successfully added block 3 to blockchain
+[2025-05-14 18:25:00] STATISTICS: Processing message from miner 2 (valid=1)
+[2025-05-14 18:25:00] STATISTICS: Successfully updated statistics
+[2025-05-14 18:25:00] MINER 1: Successfully mined block 3
+[2025-05-14 18:25:00] MINER 1: Successfully sent block after 1 attempts
+[2025-05-14 18:25:00] VALIDATOR: Received block from miner 1
+[2025-05-14 18:25:00] VALIDATOR: Block doesn't reference latest blockchain block
+[2025-05-14 18:25:00] VALIDATOR: Block 1 from 1 validation failed
+[2025-05-14 18:25:00] TXGEN: TX-6 generated with reward 2, value 202
+[2025-05-14 18:25:00] STATISTICS: Processing message from miner 1 (valid=0)
+[2025-05-14 18:25:00] STATISTICS: Successfully updated statistics
+[2025-05-14 18:25:01] TXGEN: TX-7 generated with reward 2, value 21
+[2025-05-14 18:25:02] MINER: Thread 2 mining block 4
+[2025-05-14 18:25:02] TXGEN: TX-8 generated with reward 2, value 108
+[2025-05-14 18:25:02] MINER 2: Successfully mined block 3
+[2025-05-14 18:25:02] MINER 2: Successfully sent block after 1 attempts
+[2025-05-14 18:25:02] VALIDATOR: Received block from miner 2
+[2025-05-14 18:25:02] VALIDATOR: Block 4 from 2 validated successfully
+[2025-05-14 18:25:02] VALIDATOR: Successfully added block 4 to blockchain
+[2025-05-14 18:25:03] STATISTICS: Processing message from miner 2 (valid=1)
+[2025-05-14 18:25:03] STATISTICS: Successfully updated statistics
+[2025-05-14 18:25:03] TXGEN: TX-9 generated with reward 2, value 301
+[2025-05-14 18:25:04] TXGEN: TX-10 generated with reward 2, value 183
+[2025-05-14 18:25:05] MINER: Thread 1 mining block 5
+[2025-05-14 18:25:05] TXGEN: TX-11 generated with reward 2, value 6
+[2025-05-14 18:25:05] MINER 1: Successfully mined block 4
+[2025-05-14 18:25:05] MINER 1: Successfully sent block after 1 attempts
+[2025-05-14 18:25:05] VALIDATOR: Received block from miner 1
+[2025-05-14 18:25:05] VALIDATOR: Block 5 from 1 validated successfully
+[2025-05-14 18:25:05] VALIDATOR: Successfully added block 5 to blockchain
+[2025-05-14 18:25:05] STATISTICS: Processing message from miner 1 (valid=1)
+[2025-05-14 18:25:05] STATISTICS: Successfully updated statistics
+[2025-05-14 18:25:06] TXGEN: TX-12 generated with reward 2, value 204
+[2025-05-14 18:25:07] STATISTICS: SIGUSR1 RECEIVED
+====================== MINER STATISTICS ======================
+STATISTICS: Miner 1:
+  - Valid blocks: 1
+  - Invalid blocks: 1
+  - Credits: 6
+STATISTICS: Miner 2:
+  - Valid blocks: 3
+  - Invalid blocks: 0
+  - Credits: 18
+STATISTICS: Average time to verify a transaction: 1.53 seconds
+===============================================================
+====================== GLOBAL STATISTICS ======================
+STATISTICS: Total blocks validated (valid + invalid): 5
+STATISTICS: Total blocks in blockchain: 4
+=================================================================
+[2025-05-14 18:25:07] TXGEN: TX-13 generated with reward 2, value 296
+[2025-05-14 18:25:08] TXGEN: TX-14 generated with reward 2, value 18
+[2025-05-14 18:25:08] MINER: Thread 2 mining block 6
+[2025-05-14 18:25:09] TXGEN: TX-15 generated with reward 2, value 121
+[2025-05-14 18:25:09] MINER: Thread 1 mining block 7
+[2025-05-14 18:25:10] TXGEN: TX-16 generated with reward 2, value 6
+[2025-05-14 18:25:11] TXGEN: TX-17 generated with reward 2, value 295
+[2025-05-14 18:25:11] MINER 2: Successfully mined block 5
+[2025-05-14 18:25:11] MINER 2: Successfully sent block after 1 attempts
+[2025-05-14 18:25:11] VALIDATOR: Received block from miner 2
+[2025-05-14 18:25:11] VALIDATOR: Block 6 from 2 validated successfully
+[2025-05-14 18:25:12] VALIDATOR: Successfully added block 6 to blockchain
+[2025-05-14 18:25:12] STATISTICS: Processing message from miner 2 (valid=1)
+[2025-05-14 18:25:12] STATISTICS: Successfully updated statistics
+[2025-05-14 18:25:12] TXGEN: TX-18 generated with reward 2, value 93
+[2025-05-14 18:25:13] MINER: Thread 2 mining block 8
+[2025-05-14 18:25:13] MINER 2: Successfully mined block 6
+[2025-05-14 18:25:13] MINER 2: Successfully sent block after 1 attempts
+[2025-05-14 18:25:13] VALIDATOR: Received block from miner 2
+[2025-05-14 18:25:13] VALIDATOR: Block 8 from 2 validated successfully
+[2025-05-14 18:25:13] VALIDATOR: Successfully added block 8 to blockchain
+[2025-05-14 18:25:13] STATISTICS: Processing message from miner 2 (valid=1)
+[2025-05-14 18:25:13] STATISTICS: Successfully updated statistics
+[2025-05-14 18:25:13] TXGEN: TX-19 generated with reward 2, value 128
+[2025-05-14 18:25:13] MINER 1: Successfully mined block 7
+[2025-05-14 18:25:13] MINER 1: Successfully sent block after 1 attempts
+[2025-05-14 18:25:13] VALIDATOR: Received block from miner 1
+[2025-05-14 18:25:13] VALIDATOR: Block doesn't reference latest blockchain block
+[2025-05-14 18:25:13] VALIDATOR: Block 7 from 1 validation failed
+[2025-05-14 18:25:13] STATISTICS: Processing message from miner 1 (valid=0)
+[2025-05-14 18:25:13] STATISTICS: Successfully updated statistics
+[2025-05-14 18:25:14] MINER: Thread 2 mining block 9
+[2025-05-14 18:25:14] TXGEN: TX-20 generated with reward 2, value 323
+[2025-05-14 18:25:14] MINER: Thread 1 mining block 10
+[2025-05-14 18:25:15] TXGEN: TX-21 generated with reward 2, value 172
+[2025-05-14 18:25:16] MINER 2: Successfully mined block 7
+[2025-05-14 18:25:16] MINER 2: Successfully sent block after 1 attempts
+[2025-05-14 18:25:16] VALIDATOR: Received block from miner 2
+[2025-05-14 18:25:16] VALIDATOR: Block 9 from 2 validated successfully
+[2025-05-14 18:25:16] VALIDATOR: Successfully added block 9 to blockchain
+[2025-05-14 18:25:16] STATISTICS: Processing message from miner 2 (valid=1)
+[2025-05-14 18:25:16] STATISTICS: Successfully updated statistics
+[2025-05-14 18:25:16] TXGEN: Received SIGINT, shutting down...
+--- Logging session ended at 2025-05-14 18:25:16 ---
+
+[2025-05-14 18:25:16] MINER 1: Successfully mined block 8
+[2025-05-14 18:25:16] MINER 1: Successfully sent block after 1 attempts
+[2025-05-14 18:25:16] VALIDATOR: Received block from miner 1
+[2025-05-14 18:25:16] VALIDATOR: Block doesn't reference latest blockchain block
+[2025-05-14 18:25:16] VALIDATOR: Block 10 from 1 validation failed
+[2025-05-14 18:25:16] STATISTICS: Processing message from miner 1 (valid=0)
+[2025-05-14 18:25:16] STATISTICS: Successfully updated statistics
+[2025-05-14 18:25:17] CONTROLLER: Received signal 2, initiating ordered shutdown...
+[2025-05-14 18:25:17] STATISTICS: SIGUSR1 RECEIVED
+====================== MINER STATISTICS ======================
+STATISTICS: Miner 1:
+  - Valid blocks: 1
+  - Invalid blocks: 3
+  - Credits: 6
+STATISTICS: Miner 2:
+  - Valid blocks: 6
+  - Invalid blocks: 0
+  - Credits: 36
+STATISTICS: Average time to verify a transaction: 2.55 seconds
+===============================================================
+====================== GLOBAL STATISTICS ======================
+STATISTICS: Total blocks validated (valid + invalid): 10
+STATISTICS: Total blocks in blockchain: 7
+=================================================================
+[2025-05-14 18:25:19] CONTROLLER: Starting ordered shutdown sequence...
+[2025-05-14 18:25:19] CONTROLLER: Phase 1 - Stopping miner process...
+[2025-05-14 18:25:19] MINER: Received shutdown signal
+[2025-05-14 18:25:19] CONTROLLER: Miner process exited with status 0
+[2025-05-14 18:25:19] CONTROLLER: Phase 1 complete - Miners stopped
+[2025-05-14 18:25:19] CONTROLLER: Phase 2 - Stopping validator process...
+[2025-05-14 18:25:19] VALIDATOR: Received graceful shutdown signal
+[2025-05-14 18:25:19] VALIDATOR: Process shutting down gracefully
+[2025-05-14 18:25:19] CONTROLLER: Validator process exited with status 0
+[2025-05-14 18:25:19] CONTROLLER: Phase 3 - Requesting final statistics...
+[2025-05-14 18:25:20] CONTROLLER: Phase 3 - Stopping statistics process...
+[2025-05-14 18:25:20] CONTROLLER: Statistics process exited with status 0
+[2025-05-14 18:25:20] CONTROLLER: All processes stopped
+[2025-05-14 18:25:20] =================== Blockchain Ledger ===================
+[2025-05-14 18:25:20] ||----  Block 001 ----||  
+[2025-05-14 18:25:20] Block ID: BLOCK-2 
+[2025-05-14 18:25:20] Previous Hash:
+[2025-05-14 18:25:20] 00006a8e76f31ba74e21a092cca1015a418c9d5f4375e7a4fec676e1d2ec1436
+[2025-05-14 18:25:20] Block Timestamp: 2025-05-14 18:24:57 
+[2025-05-14 18:25:20] Nonce: 339884 
+[2025-05-14 18:25:20] Transactions: 
+[2025-05-14 18:25:20]   [1] ID: TX-4 | Reward: 2 | Value: 168 | Timestamp: 2025-05-14 18:24:57 
+[2025-05-14 18:25:20]   [2] ID: TX-3 | Reward: 2 | Value: 113 | Timestamp: 2025-05-14 18:24:56 
+[2025-05-14 18:25:20]   [3] ID: TX-2 | Reward: 2 | Value: 111 | Timestamp: 2025-05-14 18:24:55 
+[2025-05-14 18:25:20] ||-----------------------------------------|| 
+[2025-05-14 18:25:20] ||----  Block 002 ----||  
+[2025-05-14 18:25:20] Block ID: BLOCK-3 
+[2025-05-14 18:25:20] Previous Hash:
+[2025-05-14 18:25:20] 0000073c875f910e2bd5ae47ce2e56cfc5db9bc96d4d08918d45f1e3e1528579
+[2025-05-14 18:25:20] Block Timestamp: 2025-05-14 18:24:59 
+[2025-05-14 18:25:20] Nonce: 145023 
+[2025-05-14 18:25:20] Transactions: 
+[2025-05-14 18:25:20]   [1] ID: TX-5 | Reward: 2 | Value: 61 | Timestamp: 2025-05-14 18:24:58 
+[2025-05-14 18:25:20]   [2] ID: TX-1 | Reward: 2 | Value: 320 | Timestamp: 2025-05-14 18:24:54 
+[2025-05-14 18:25:20]   [3] ID: TX-6 | Reward: 2 | Value: 217 | Timestamp: 2025-05-14 18:24:59 
+[2025-05-14 18:25:20] ||-----------------------------------------|| 
+[2025-05-14 18:25:20] ||----  Block 003 ----||  
+[2025-05-14 18:25:20] Block ID: BLOCK-4 
+[2025-05-14 18:25:20] Previous Hash:
+[2025-05-14 18:25:20] 00000d05bfac803e4ddacd759fd78ae14ba8bfefa7365bfdd21422352217c1b4
+[2025-05-14 18:25:20] Block Timestamp: 2025-05-14 18:25:02 
+[2025-05-14 18:25:20] Nonce: 54427 
+[2025-05-14 18:25:20] Transactions: 
+[2025-05-14 18:25:20]   [1] ID: TX-8 | Reward: 2 | Value: 21 | Timestamp: 2025-05-14 18:25:01 
+[2025-05-14 18:25:20]   [2] ID: TX-7 | Reward: 2 | Value: 202 | Timestamp: 2025-05-14 18:25:00 
+[2025-05-14 18:25:20]   [3] ID: TX-9 | Reward: 2 | Value: 108 | Timestamp: 2025-05-14 18:25:02 
+[2025-05-14 18:25:20] ||-----------------------------------------|| 
+[2025-05-14 18:25:20] ||----  Block 004 ----||  
+[2025-05-14 18:25:20] Block ID: BLOCK-5 
+[2025-05-14 18:25:20] Previous Hash:
+[2025-05-14 18:25:20] 000003729c765fe676a01718ea829c35205e27050cf41b66d99764a924f00633
+[2025-05-14 18:25:20] Block Timestamp: 2025-05-14 18:25:05 
+[2025-05-14 18:25:20] Nonce: 23912 
+[2025-05-14 18:25:20] Transactions: 
+[2025-05-14 18:25:20]   [1] ID: TX-12 | Reward: 2 | Value: 6 | Timestamp: 2025-05-14 18:25:05 
+[2025-05-14 18:25:20]   [2] ID: TX-11 | Reward: 2 | Value: 183 | Timestamp: 2025-05-14 18:25:04 
+[2025-05-14 18:25:20]   [3] ID: TX-10 | Reward: 2 | Value: 301 | Timestamp: 2025-05-14 18:25:03 
+[2025-05-14 18:25:20] ||-----------------------------------------|| 
+[2025-05-14 18:25:20] ||----  Block 005 ----||  
+[2025-05-14 18:25:20] Block ID: BLOCK-6 
+[2025-05-14 18:25:20] Previous Hash:
+[2025-05-14 18:25:20] 00000be19e4b3f80ce4133f05425c1f9730a0bcfa92b53083747d56e553b9076
+[2025-05-14 18:25:20] Block Timestamp: 2025-05-14 18:25:08 
+[2025-05-14 18:25:20] Nonce: 1378366 
+[2025-05-14 18:25:20] Transactions: 
+[2025-05-14 18:25:20]   [1] ID: TX-14 | Reward: 2 | Value: 296 | Timestamp: 2025-05-14 18:25:07 
+[2025-05-14 18:25:20]   [2] ID: TX-13 | Reward: 2 | Value: 204 | Timestamp: 2025-05-14 18:25:06 
+[2025-05-14 18:25:20]   [3] ID: TX-15 | Reward: 2 | Value: 18 | Timestamp: 2025-05-14 18:25:08 
+[2025-05-14 18:25:20] ||-----------------------------------------|| 
+[2025-05-14 18:25:20] ||----  Block 006 ----||  
+[2025-05-14 18:25:20] Block ID: BLOCK-8 
+[2025-05-14 18:25:20] Previous Hash:
+[2025-05-14 18:25:20] 000001136f4f93b570cde002fb470fff38015f027521782eabe627c9caf5beda
+[2025-05-14 18:25:20] Block Timestamp: 2025-05-14 18:25:13 
+[2025-05-14 18:25:20] Nonce: 21221 
+[2025-05-14 18:25:20] Transactions: 
+[2025-05-14 18:25:20]   [1] ID: TX-19 | Reward: 2 | Value: 93 | Timestamp: 2025-05-14 18:25:12 
+[2025-05-14 18:25:20]   [2] ID: TX-18 | Reward: 2 | Value: 295 | Timestamp: 2025-05-14 18:25:11 
+[2025-05-14 18:25:20]   [3] ID: TX-16 | Reward: 2 | Value: 121 | Timestamp: 2025-05-14 18:25:09 
+[2025-05-14 18:25:20] ||-----------------------------------------|| 
+[2025-05-14 18:25:20] ||----  Block 007 ----||  
+[2025-05-14 18:25:20] Block ID: BLOCK-9 
+[2025-05-14 18:25:20] Previous Hash:
+[2025-05-14 18:25:20] 00000bd6acc26f4b10228aa1a471d83e1852cdbf90c2b21f264fac5864611384
+[2025-05-14 18:25:20] Block Timestamp: 2025-05-14 18:25:14 
+[2025-05-14 18:25:20] Nonce: 648810 
+[2025-05-14 18:25:20] Transactions: 
+[2025-05-14 18:25:20]   [1] ID: TX-17 | Reward: 2 | Value: 6 | Timestamp: 2025-05-14 18:25:10 
+[2025-05-14 18:25:20]   [2] ID: TX-20 | Reward: 2 | Value: 128 | Timestamp: 2025-05-14 18:25:13 
+[2025-05-14 18:25:20]   [3] ID: TX-21 | Reward: 2 | Value: 323 | Timestamp: 2025-05-14 18:25:14 
+[2025-05-14 18:25:20] ||-----------------------------------------|| 
+[2025-05-14 18:25:20] CONTROLLER: Beginning cleanup of all resources...
+[2025-05-14 18:25:20] CONTROLLER: Removed blockchain ledger file
+[2025-05-14 18:25:20] CONTROLLER: All resources cleaned up
+[2025-05-14 18:25:20] CONTROLLER: Shutdown complete
+--- Logging session ended at 2025-05-14 18:25:20 ---
+
