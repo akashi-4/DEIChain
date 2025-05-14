@@ -19,7 +19,7 @@ static FILE* log_file = NULL;
 static pthread_mutex_t log_mutex = PTHREAD_MUTEX_INITIALIZER;
 
 // Default log file path
-static char log_file_path[256] = "DEIChain_log.log";
+static char log_file_path[256] = "DEIChain_log.txt";
 
 void logger_init(const char* file_path) {
     pthread_mutex_lock(&log_mutex);

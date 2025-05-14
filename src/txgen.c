@@ -151,7 +151,7 @@ int main(int argc, char *argv[]) {
     }
 
     // Initialize the logger
-    logger_init("DEIChain_log.log");
+    logger_init("DEIChain_log.txt");
     log_message("TXGEN: Starting with reward=%d, sleep_time=%dms\n", reward, sleep_time);
 
     // Setup signal handler
