@@ -26,19 +26,18 @@ void validator_process();
 
 // Statistics functions
 void create_statistics_process();
-void print_statistics();
-void initialize_statistics();
-void free_statistics();
-void update_statistics(MessageToStatistics message);
+void print_statistics(Statistics *stats);
+void initialize_statistics(Statistics *stats);
+void free_statistics(Statistics *stats);
+void update_statistics(Statistics *stats, MessageToStatistics *message);
 void statistics_process();
 
 // Message queue functions
 int create_message_queue();
 void send_message(int msqid, MessageToStatistics *message);
 void receive_message(int msqid, MessageToStatistics *message);
-void free_message(MessageToStatistics *message);
 void print_message(MessageToStatistics* message);
-MessageToStatistics* prepare_message(int miner_id, int valid_block, int credits, time_t block_timestamp, time_t tx_timestamp[]);
+MessageToStatistics* prepare_message(int miner_id, int valid_block, int credits, time_t block_timestamp, Transaction* transactions);
 
 // Blockchain functions
 void get_transactions_from_transaction_pool();
@@ -64,5 +63,9 @@ void cleanup_named_pipes();
 
 // Signal handling
 void signal_handler(int signum);
+void miner_signal_handler(int signum);
+void validator_signal_handler(int signum);
+void statistics_signal_handler(int signum);
+void controller_sigusr2_handler(int signum);
 
 #endif /* CONTROLLER_H */
